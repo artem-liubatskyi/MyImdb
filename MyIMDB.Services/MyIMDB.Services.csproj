@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyIMDB.ApiModels\MyIMDB.ApiModels.csproj" />
+    <ProjectReference Include="..\MyIMDB.DataAccess\MyIMDB.DataAccess.csproj" />
+  </ItemGroup>
+
+</Project>
