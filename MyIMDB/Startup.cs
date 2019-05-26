@@ -30,11 +30,11 @@ namespace MyIMDB
         {
             services.AddCors();
             services.AddTransient<IMovieService, MovieService>();
-            
             services.AddTransient<IMoviePersonService, MoviePersonService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IAccountService, AccountService>();
 
-            #region Auth
+            #region Authentication
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
 
@@ -75,9 +75,7 @@ namespace MyIMDB
             });
 
             #endregion
-
-            services.AddScoped<IAccountService, AccountService>();
-
+            
             services.AddDbContext<ImdbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly(typeof(ImdbContext).GetTypeInfo().Assembly.GetName().Name)));

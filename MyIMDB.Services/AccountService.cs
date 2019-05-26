@@ -50,7 +50,7 @@ namespace MyIMDB.Services
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
 
-            Uow.Repository<User>().Add(user);
+            Uow.Repository<User>().Update(user);
             Uow.SaveChanges();
 
             return user;

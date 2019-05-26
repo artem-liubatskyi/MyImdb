@@ -23,7 +23,10 @@ namespace MyIMDB.DataAccess
         {
             return DbContext.Add(entities).Entity;
         }
-
+        public TEntity Update(TEntity entity)
+        {
+            return DbContext.Update(entity).Entity;
+        }
         public IQueryable<TEntity> GetQueryable()
         {
             return DbContext.Set<TEntity>();
