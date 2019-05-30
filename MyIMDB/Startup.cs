@@ -32,13 +32,13 @@ namespace MyIMDB
             services.AddTransient<IMovieService, MovieService>();
             services.AddTransient<IMoviePersonService, MoviePersonService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<IRateRepository, RateRepository>();
             services.AddScoped<IAccountService, AccountService>();
 
             #region Authentication
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
-
-            // configure jwt authentication
+            
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
             services.AddAuthentication(x =>
@@ -57,7 +57,6 @@ namespace MyIMDB
                         var user = userService.GetById(userId);
                         if (user == null)
                         {
-                            // return unauthorized if user no longer exists
                             context.Fail("Unauthorized");
                         }
                         return Task.CompletedTask;

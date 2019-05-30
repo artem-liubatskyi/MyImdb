@@ -8,7 +8,7 @@ namespace MyIMDB.Services
     {
         Task<MovieViewModel> Get(long id, long? userId);
         Task<IEnumerable<MovieListViewModel>> GetListBySearchQuery(string searchQuerue, long? userId);
-        Task AddRate(RateViewModel model);
+        Task AddRate(RateViewModel model, long userId);
         Task<IEnumerable<MovieListViewModel>> GetTop(long? userId);
     }
 }

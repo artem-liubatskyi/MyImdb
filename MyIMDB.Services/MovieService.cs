@@ -6,17 +6,19 @@ using MyIMDB.Interfaces;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-
+using MyIMDB.DataAccess;
 
 namespace MyIMDB.Services
 {
     public class MovieService : IMovieService
     {
         private readonly IUnitOfWork Uow;
+        private readonly IRateRepository rateRepository;
 
-        public MovieService(IUnitOfWork uow)
+        public MovieService(IUnitOfWork uow, IRateRepository repositiry)
         {
             Uow = uow ?? throw new ArgumentNullException(nameof(uow));
+            rateRepository = repositiry ?? throw new ArgumentNullException(nameof(repositiry));
         }
         public async Task<MovieViewModel> Get(long id, long? userId)
         {
@@ -102,21 +104,28 @@ namespace MyIMDB.Services
                 //.ProjectTo<MovieListViewModel>()
                 .ToArrayAsync();
         }
-        public async Task AddRate(RateViewModel model)
+        public async Task AddRate(RateViewModel model, long userId)
         {
             var movie =  await Uow.Repository<Movie>().Get(model.MovieId)
                 .Include(x => x.Rates)
                 .FirstOrDefaultAsync();
-            if(movie!=null)
+
+            if (movie != null)
             {
-                var rate = movie.Rates.FirstOrDefault(x => x.ProfileId == model.UserId);
+                var rate = movie.Rates.FirstOrDefault(x => x.ProfileId == userId);
+                var newRate = new Rate() { MovieId = model.MovieId, ProfileId = userId, Value = model.Value };
                 if (rate == null)
-                    movie.Rates.ToList().Add(new Rate() { MovieId = model.MovieId, ProfileId = model.UserId, Value = model.Value });
+                {
+                    rateRepository.Add(newRate);
+                    movie.Rates.ToList().Add(newRate);
+
+                }
                 else
-                    rate.Value = model.Value;
+                   rate.Value = newRate.Value;
                 Uow.SaveChanges();
             }
-            
+            else
+                throw new Exception("No movie with id: " + model.MovieId);
         }
     }
 }

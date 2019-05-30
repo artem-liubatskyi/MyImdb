@@ -17,7 +17,7 @@ namespace MyIMDB.Web.Controllers
         {
             this.service = service ?? throw new ArgumentNullException(nameof(service));
         }
-        [HttpGet("{id}")]
+        [HttpGet("{id?}")]
         public async Task<IActionResult> Get(long id)
         {
             long? userId=null;
@@ -26,7 +26,7 @@ namespace MyIMDB.Web.Controllers
 
             return Ok(await service.Get(id, userId));
         }
-        [HttpGet("search/{searchQuery}")]
+        [HttpGet("search/{searchQuery?}")]
         public async Task<IActionResult> GetBySearchQuery(string searchQuery)
         {
             long? userId = null;
@@ -45,11 +45,20 @@ namespace MyIMDB.Web.Controllers
             return Ok(await service.GetTop(userId));
         }
         [Authorize]
-        [HttpPost("AddRate")]
-        public async Task<IActionResult> AddRate(RateViewModel model)
+        [HttpPost("rate")]
+        public async Task<IActionResult> AddRate([FromBody]RateViewModel model)
         {
-            await service.AddRate(model);
-            return RedirectToAction("UserPage", "Account");
+            long userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
+
+            try
+            {
+                await service.AddRate(model, userId);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            return Ok();
         }
     }
 }
