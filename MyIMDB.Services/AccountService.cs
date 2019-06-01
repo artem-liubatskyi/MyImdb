@@ -6,16 +6,19 @@ using MyIMDB.Data.Entities;
 using MyIMDB.Interfaces;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using MyIMDB.Services.Hashing;
 
 namespace MyIMDB.Services
 {
     public class AccountService : IAccountService
     {
         private readonly IUnitOfWork Uow;
+        private readonly IHasher Hasher;
 
-        public AccountService(IUnitOfWork uow)
+        public AccountService(IUnitOfWork uow, IHasher hasher)
         {
             Uow = uow ?? throw new ArgumentNullException(nameof(uow));
+            Hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
         }
 
         public async Task<User> Authenticate(string username, string password)
@@ -28,37 +31,37 @@ namespace MyIMDB.Services
             if (user == null)
                 return null;
 
-            if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                return null;
-            return user;
+            if (await Hasher.VerifyPasswordHash(password, new PasswordHash(user.PasswordHash, user.PasswordSalt)))
+                return user;
+
+            return  null;
         }
 
-        public User Create(User user, string password)
+        public async Task<User> Create(User user, string password)
         {
             if (string.IsNullOrWhiteSpace(password))
                 throw new Exception("Password is required");
 
-            if (Uow.Repository<User>().GetQueryable().Any(x => x.Login == user.Login))
+            if (await Uow.Repository<User>().GetQueryable().AnyAsync(x => x.Login == user.Login))
                 throw new Exception("Username \"" + user.Login + "\" is already taken");
 
-            if (Uow.Repository<User>().GetQueryable().Any(x => x.EMail == user.EMail))
+            if (await Uow.Repository<User>().GetQueryable().AnyAsync(x => x.EMail == user.EMail))
                 throw new Exception("Email \"" + user.EMail + "\" is already taken");
 
-            byte[] passwordHash, passwordSalt;
-            CreatePasswordHash(password, out passwordHash, out passwordSalt);
+            PasswordHash ph = await Hasher.CreatePasswordHash(password);
 
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
+            user.PasswordHash = ph.Hash;
+            user.PasswordSalt = ph.Salt;
 
-            Uow.Repository<User>().Update(user);
-            Uow.SaveChanges();
+            await Uow.Repository<User>().Add(user);
+            await Uow.SaveChangesAsync();
 
             return user;
         }
 
-        public void Update(User userParam, string password = null)
+        public async void Update(User userParam, string password = null)
         {
-            var user = Uow.Repository<User>().GetQueryable().FirstOrDefault(x=>x.Id==userParam.Id);
+            var user = await Uow.Repository<User>().GetQueryable().FirstOrDefaultAsync(x=>x.Id==userParam.Id);
 
             if (user == null)
                 throw new Exception("User not found");
@@ -68,64 +71,35 @@ namespace MyIMDB.Services
                 if (Uow.Repository<User>().GetQueryable().Any(x => x.Login == userParam.Login))
                     throw new Exception("Username " + userParam.Login + " is already taken");
             }
-            
-            user.FullName = userParam.FullName;
-            user.Login = userParam.Login;
+            if (userParam.EMail != user.EMail)
+            {
+                if (Uow.Repository<User>().GetQueryable().Any(x => x.Login == userParam.Login))
+                    throw new Exception("eMail " + userParam.EMail + " is already taken");
+            }
             
             if (!string.IsNullOrWhiteSpace(password))
             {
-                byte[] passwordHash, passwordSalt;
-                CreatePasswordHash(password, out passwordHash, out passwordSalt);
+                PasswordHash ph = await Hasher.CreatePasswordHash(password);
 
-                user.PasswordHash = passwordHash;
-                user.PasswordSalt = passwordSalt;
+                userParam.PasswordHash = ph.Hash;
+                userParam.PasswordSalt = ph.Salt;
             }
-            Uow.SaveChanges();
+            Uow.Repository<User>().Update(userParam);
+            await Uow.SaveChangesAsync();
         }
 
-        public void Delete(int id)
+        public async void Delete(int id)
         {
-            var user = Uow.Repository<User>().GetQueryable().FirstOrDefault(x=>x.Id==id);
+            var user = await Uow.Repository<User>().GetQueryable().FirstOrDefaultAsync(x=>x.Id==id);
             if (user != null)
             {
                 Uow.Repository<User>().Delete(user);
-                Uow.SaveChanges();
+                await Uow.SaveChangesAsync();
             }
         }
-
-        private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        public async Task<User> Get(long id)
         {
-            if (password == null) throw new ArgumentNullException("password");
-            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Value cannot be empty or whitespace only string.", "password");
-
-            using (var hmac = new System.Security.Cryptography.HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            }
-        }
-
-        private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
-        {
-            if (password == null) throw new ArgumentNullException("password");
-            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Value cannot be empty or whitespace only string.", "password");
-            if (storedHash.Length != 64) throw new ArgumentException("Invalid length of password hash (64 bytes expected).", "passwordHash");
-            if (storedSalt.Length != 128) throw new ArgumentException("Invalid length of password salt (128 bytes expected).", "passwordHash");
-
-            using (var hmac = new System.Security.Cryptography.HMACSHA512(storedSalt))
-            {
-                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-                for (int i = 0; i < computedHash.Length; i++)
-                {
-                    if (computedHash[i] != storedHash[i]) return false;
-                }
-            }
-
-            return true;
-        }
-        public User GetById(int id)
-        {
-            return Uow.Repository<User>().GetQueryable().FirstOrDefault(x=>x.Id==id);
+            return await Uow.Repository<User>().Get(id);
         }
         public async Task<RegisterDataModel> GetRegistrationData()
         {
@@ -144,7 +118,7 @@ namespace MyIMDB.Services
         }
         public async Task<UserPageViewModel> GetUserPageModel(long userId)
         {
-            var user = await Uow.Repository<User>().Get(userId)
+            var user = await Uow.Repository<User>().GetQueryable().Where(x=>x.Id==userId)
                 .Include(u => u.Rates)
                 .ThenInclude(rate => rate.Movie)
                 .ThenInclude(movie=>movie.Rates)

@@ -7,7 +7,7 @@ namespace MyIMDB.Web.Controllers
 {
     [ApiController]
     [Route("persons")]
-    public class MoviePersonController : Controller
+    public class MoviePersonController : ControllerBase
     {
         private readonly IMoviePersonService service;
 

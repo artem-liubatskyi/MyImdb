@@ -12,6 +12,7 @@ using MyIMDB.Data;
 using MyIMDB.DataAccess;
 using MyIMDB.Interfaces;
 using MyIMDB.Services;
+using MyIMDB.Services.Hashing;
 using MyIMDB.Web.Helpers;
 
 namespace MyIMDB
@@ -29,6 +30,7 @@ namespace MyIMDB
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
+            services.AddTransient<IHasher, Hasher>();
             services.AddTransient<IMovieService, MovieService>();
             services.AddTransient<IMoviePersonService, MoviePersonService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -54,7 +56,7 @@ namespace MyIMDB
                     {
                         var userService = context.HttpContext.RequestServices.GetRequiredService<IAccountService>();
                         var userId = int.Parse(context.Principal.Identity.Name);
-                        var user = userService.GetById(userId);
+                        var user = userService.Get(userId);
                         if (user == null)
                         {
                             context.Fail("Unauthorized");

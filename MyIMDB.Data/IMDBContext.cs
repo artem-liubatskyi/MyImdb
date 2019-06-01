@@ -45,7 +45,5 @@ namespace MyIMDB.Data
         public DbSet<MoviePersonsMovies> MoviePersonsMovies { get; set; }
 
         public DbSet<WatchLaterMovies> WatchLaterMovies { get; set; }
-
-        //public DbSet<MPMType> MPMTypes { get; set; }
     }
 }

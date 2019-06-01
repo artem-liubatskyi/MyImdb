@@ -9,7 +9,9 @@ using MyIMDB.Services;
 
 namespace MyIMDB.Web.Controllers
 {
-    public class SearchController : Controller
+    [ApiController]
+    [Route("[controller]")]
+    public class SearchController : ControllerBase
     {
         private readonly IMovieService movieService;
         private readonly IMoviePersonService moviePersonService;
@@ -19,6 +21,7 @@ namespace MyIMDB.Web.Controllers
             this.movieService = movieService ?? throw new ArgumentNullException(nameof(movieService));
             this.moviePersonService = moviePersonService ?? throw new ArgumentNullException(nameof(moviePersonService));
         }
+        [HttpGet("search")]
         public async Task<IActionResult> SearchResults(SearchQueryViewModel model)
         {
             long? userId = null;

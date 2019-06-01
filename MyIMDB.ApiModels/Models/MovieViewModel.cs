@@ -4,6 +4,7 @@ namespace MyIMDB.ApiModels.Models
 {
     public class MovieViewModel
     {
+        public long Id { get; set; }
         public string Title { get; set; }
         public int Year { get; set; }
         public string ImageUrl { get; set; }

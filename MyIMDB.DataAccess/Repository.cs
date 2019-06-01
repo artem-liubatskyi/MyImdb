@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MyIMDB.Interfaces;
 
@@ -14,14 +15,15 @@ namespace MyIMDB.DataAccess
             DbContext = dbContext;
         }
 
-        public TEntity Add(TEntity entity)
+        public async Task<TEntity> Add(TEntity entity)
         {
-            return DbContext.Add(entity).Entity;
+            await DbContext.AddAsync(entity);
+            return entity;
         }
-
-        public IEnumerable<TEntity> Add(IReadOnlyCollection<TEntity> entities)
+        public async Task<IEnumerable<TEntity>> Add(IReadOnlyCollection<TEntity> entities)
         {
-            return DbContext.Add(entities).Entity;
+            await DbContext.AddAsync(entities);
+            return entities;
         }
         public TEntity Update(TEntity entity)
         {
@@ -52,9 +54,9 @@ namespace MyIMDB.DataAccess
             DbContext.Remove(entities);
         }
 
-        public IQueryable<TEntity> Get(long id)
+        public async Task<TEntity> Get(long id)
         {
-            return GetQueryable().Where(x => x.Id == id);
+            return await DbContext.Set<TEntity>().FindAsync(id);
         }
     }
 }

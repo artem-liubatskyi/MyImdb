@@ -22,7 +22,7 @@ namespace MyIMDB.Web.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class AccountController : Controller
+    public class AccountController : ControllerBase
     {
         private readonly IAccountService service;
         private readonly AppSettings _appSettings;
@@ -71,7 +71,7 @@ namespace MyIMDB.Web.Controllers
         }
         [AllowAnonymous]
         [HttpPost("register")]
-        public IActionResult Register([FromBody]RegisterModel model)
+        public async Task<IActionResult> Register([FromBody]RegisterModel model)
         {
             var user = new User()
             {
@@ -83,16 +83,9 @@ namespace MyIMDB.Web.Controllers
                 GenderId = model.GenderId,
                 CountryId = model.CountryId
             };
-
-            try
-            {
-                service.Create(user, model.Password);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            
+             await service.Create(user, model.Password);
+             return Ok();
         }
     }
 }

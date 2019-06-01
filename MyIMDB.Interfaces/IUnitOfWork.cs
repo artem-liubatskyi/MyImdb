@@ -1,4 +1,6 @@
-﻿namespace MyIMDB.Interfaces
+﻿using System.Threading.Tasks;
+
+namespace MyIMDB.Interfaces
 {
     public interface IUnitOfWork
     {
@@ -6,6 +8,6 @@
         void BeginTransaction();
         void CommitTransaction();
         void RollbackTransaction();
-        void SaveChanges();
+        Task<int> SaveChangesAsync();
     }
 }

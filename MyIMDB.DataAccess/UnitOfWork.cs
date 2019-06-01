@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using MyIMDB.Data;
 using MyIMDB.Interfaces;
@@ -66,9 +68,9 @@ namespace MyIMDB.DataAccess
             }
         }
 
-        public void SaveChanges()
+        public async Task<int> SaveChangesAsync()
         {
-            dbContext.SaveChanges();
+            return await dbContext.SaveChangesAsync();
         }
     }
 }

@@ -22,7 +22,7 @@ namespace MyIMDB.Services
         }
         public async Task<MovieViewModel> Get(long id, long? userId)
         {
-            var entity = await Uow.Repository<Movie>().Get(id)
+            var entity = await Uow.Repository<Movie>().GetQueryable().Where(x=>x.Id==id)
                 .Include(x=>x.Rates)
                 .Include(x=>x.MoviesCountries)
                     .ThenInclude(x=>x.Country)
@@ -58,6 +58,7 @@ namespace MyIMDB.Services
 
             var model = new MovieViewModel
             {
+                Id = entity.Id,
                 Title = entity.Title,
                 Year = entity.Year,
                 ImageUrl = entity.ImageUrl,
@@ -73,8 +74,8 @@ namespace MyIMDB.Services
         public async Task<IEnumerable<MovieListViewModel>> GetListBySearchQuery(string searchQuerue, long? userId)
         {
             return await Uow.Repository<Movie>().GetQueryable()
-                .Include(movie => movie.Rates)
                 .Where(x => x.Title.Contains(searchQuerue))
+                .Include(movie => movie.Rates)
                 .Select(x => new MovieListViewModel()
                 {
                     Id = x.Id,
@@ -86,7 +87,7 @@ namespace MyIMDB.Services
                 })
                 .ToArrayAsync();
         }
-        public async Task<IEnumerable<MovieListViewModel>> GetTop(long? userId)
+        public async Task<IEnumerable<MovieListViewModel>> GetTop(long? userId, int topSize = 250)
         {
             return await Uow.Repository<Movie>().GetQueryable()
                 .Include(movie => movie.Rates)
@@ -100,13 +101,12 @@ namespace MyIMDB.Services
                     UsersRate = (x.Rates.Any() & userId != null) ? (x.Rates.FirstOrDefault(rate => rate.ProfileId == userId).Value) : 0
                 })
                 .OrderByDescending(x=>x.AverageRate)
-                .Take(250)
-                //.ProjectTo<MovieListViewModel>()
+                .Take(topSize)
                 .ToArrayAsync();
         }
         public async Task AddRate(RateViewModel model, long userId)
         {
-            var movie =  await Uow.Repository<Movie>().Get(model.MovieId)
+            var movie =  await Uow.Repository<Movie>().GetQueryable().Where(x=>x.Id==model.MovieId)
                 .Include(x => x.Rates)
                 .FirstOrDefaultAsync();
 
@@ -122,7 +122,7 @@ namespace MyIMDB.Services
                 }
                 else
                    rate.Value = newRate.Value;
-                Uow.SaveChanges();
+                await Uow.SaveChangesAsync();
             }
             else
                 throw new Exception("No movie with id: " + model.MovieId);

@@ -20,7 +20,7 @@ namespace MyIMDB.Services
         }
         public async Task<MoviePersonViewModel> Get(long id)
         {
-            var entity = await Uow.Repository<MoviePerson>().Get(id)
+            var entity = await Uow.Repository<MoviePerson>().GetQueryable().Where(x=>x.Id==id)
                 .Include(x=>x.Country)
                 .Include(x=>x.Gender)
                 .Include(x=>x.MoviePersonsMovies)

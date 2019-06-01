@@ -10,7 +10,7 @@ namespace MyIMDB.Web.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class MoviesController : Controller
+    public class MoviesController : ControllerBase
     {
         private readonly IMovieService service;
         public MoviesController(IMovieService service)
@@ -20,29 +20,17 @@ namespace MyIMDB.Web.Controllers
         [HttpGet("{id?}")]
         public async Task<IActionResult> Get(long id)
         {
-            long? userId=null;
-            if (User.Identity.IsAuthenticated)
-                userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
-
-            return Ok(await service.Get(id, userId));
+            return Ok(await service.Get(id, GetUserId()));
         }
         [HttpGet("search/{searchQuery?}")]
         public async Task<IActionResult> GetBySearchQuery(string searchQuery)
         {
-            long? userId = null;
-            if (User.Identity.IsAuthenticated)
-                userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
-
-            return Ok(await service.GetListBySearchQuery(searchQuery, userId));
+            return Ok(await service.GetListBySearchQuery(searchQuery, GetUserId()));
         }
         [HttpGet("top")]
         public async Task<IActionResult> GetTop()
         {
-            long? userId = null;
-            if (User.Identity.IsAuthenticated)
-                userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
-
-            return Ok(await service.GetTop(userId));
+            return Ok(await service.GetTop(GetUserId()));
         }
         [Authorize]
         [HttpPost("rate")]
@@ -50,15 +38,15 @@ namespace MyIMDB.Web.Controllers
         {
             long userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
 
-            try
-            {
-                await service.AddRate(model, userId);
-            }
-            catch(Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            await service.AddRate(model, userId);
             return Ok();
+        }
+        private long? GetUserId()
+        {
+            long? userId = null;
+            if (User.Identity.IsAuthenticated)
+                userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
+            return userId;
         }
     }
 }
