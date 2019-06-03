@@ -87,5 +87,13 @@ namespace MyIMDB.Web.Controllers
              await service.Create(user, model.Password);
              return Ok();
         }
+
+        [HttpGet("user-page")]
+        public async Task<IActionResult> UserPage()
+        {
+            long userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
+
+            return Ok(await service.GetUserPageModel(userId));
+        }
     }
 }

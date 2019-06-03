@@ -8,5 +8,7 @@ namespace MyIMDB.ApiModels.Models
     {
         public string FullName { get; set; }
         public IEnumerable<MovieListViewModel> Rates { get; set; }
+        public IEnumerable<MovieListViewModel>  WatchLaterMovies { get; set; }
+
     }
 }

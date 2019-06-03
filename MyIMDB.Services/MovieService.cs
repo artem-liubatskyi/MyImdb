@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using MyIMDB.DataAccess;
+using AutoMapper;
 
 namespace MyIMDB.Services
 {
@@ -14,68 +15,72 @@ namespace MyIMDB.Services
     {
         private readonly IUnitOfWork Uow;
         private readonly IRateRepository rateRepository;
+        private readonly IMapper mapper;
 
-        public MovieService(IUnitOfWork uow, IRateRepository repositiry)
+        public MovieService(IUnitOfWork uow, IRateRepository rateRepository, IMapper mapper)
         {
             Uow = uow ?? throw new ArgumentNullException(nameof(uow));
-            rateRepository = repositiry ?? throw new ArgumentNullException(nameof(repositiry));
+            this.rateRepository = rateRepository ?? throw new ArgumentNullException(nameof(rateRepository));
+            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
+        private int getUserRate(Movie movie, long? userId)
+        {
+            Rate rate = null;
+            
+            rate = movie.Rates.FirstOrDefault(r => r.ProfileId == userId);
+            if (rate != null)
+               return rate.Value;
+            
+            return 0;
+        }
+        private double getAverageRate(Movie movie)
+        {
+            return movie.Rates.Any() ? movie.Rates.Sum(rate => rate.Value) / movie.Rates.Count() : 0;
+        }
+
         public async Task<MovieViewModel> Get(long id, long? userId)
         {
             var entity = await Uow.Repository<Movie>().GetQueryable().Where(x=>x.Id==id)
+                .Include(x => x.MoviesCountries)
+                    .ThenInclude(x => x.Country)
                 .Include(x=>x.Rates)
-                .Include(x=>x.MoviesCountries)
-                    .ThenInclude(x=>x.Country)
                 .Include(x => x.Genres)
                     .ThenInclude(x => x.Genre)
                 .Include(x=>x.MoviePersonsMovies)
                     .ThenInclude(x=>x.Person)
                         .ThenInclude(x=>x.MoviePersonsMovies)
                             .ThenInclude(x=>x.MoviePersonType)
-                 .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync();
 
             if (entity == null)
                 return null;
 
-            var genres = entity.Genres.Select(x => x.Genre).Select(x=>x.Title).ToArray();
-            var directers = entity.MoviePersonsMovies.Where(x => x.MoviePersonType.Type == "Directer").Select(x =>
-                new MoviePersonListViewModel()
-                {
-                    Id = x.MoviePersonId,
-                    Year =x.Person.DateOfBirth.Year,
-                    FullName =x.Person.FullName,
-                    ImageUrl= x.Person.ImageUrl
-                }).ToArray();
-            var stars= entity.MoviePersonsMovies.Where(x => x.MoviePersonType.Type == "Star").Select(x =>
-                new MoviePersonListViewModel()
-                {
-                    Id = x.MoviePersonId,
-                    Year = x.Person.DateOfBirth.Year,
-                    FullName = x.Person.FullName,
-                    ImageUrl = x.Person.ImageUrl
-                }).ToArray();
-            var averageRate = entity.Rates.Any() ? entity.Rates.Sum(x => x.Value) / entity.Rates.Count() : 0;
+            var model = mapper.Map<MovieViewModel>(entity);
 
-            var model = new MovieViewModel
+            await Task.Run(()=>
             {
-                Id = entity.Id,
-                Title = entity.Title,
-                Year = entity.Year,
-                ImageUrl = entity.ImageUrl,
-                Description = entity.Description,
-                Genres = genres,
-                AverageRate = averageRate,
-                Directers = directers,
-                UsersRate = (entity.Rates.Any() & userId != null) ? (entity.Rates.FirstOrDefault(rate => rate.ProfileId == userId).Value) : 0,
-                Stars = stars,
-            };
+                model.Genres = entity.Genres.Select(x => x.Genre).Select(x => x.Title).ToArray();
+
+                model.Directers = mapper.ProjectTo<MoviePersonListViewModel>
+                    (entity.MoviePersonsMovies.Where(x => x.MoviePersonType.Type == Constants.DirecterType).AsQueryable());
+
+                model.Stars = mapper.ProjectTo<MoviePersonListViewModel>
+                    (entity.MoviePersonsMovies.Where(x => x.MoviePersonType.Type == Constants.StarType).AsQueryable());
+
+                model.AverageRate = entity.Rates.Any() ? entity.Rates.Sum(x => x.Value) / entity.Rates.Count() : 0;
+
+                model.UsersRate = getUserRate(entity, userId);
+
+                model.Countries = entity.MoviesCountries.Select(x => x.Country.Name);
+            });
+
             return model;
         }
         public async Task<IEnumerable<MovieListViewModel>> GetListBySearchQuery(string searchQuerue, long? userId)
         {
             return await Uow.Repository<Movie>().GetQueryable()
                 .Where(x => x.Title.Contains(searchQuerue))
-                .Include(movie => movie.Rates)
+                .Include(movie => movie.Rates)   
                 .Select(x => new MovieListViewModel()
                 {
                     Id = x.Id,

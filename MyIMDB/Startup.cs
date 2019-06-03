@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,7 +20,6 @@ namespace MyIMDB
 {
     public class Startup
     {
-
         public IConfiguration Configuration { get; }
 
         public Startup(IConfiguration configuration)
@@ -81,6 +81,8 @@ namespace MyIMDB
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly(typeof(ImdbContext).GetTypeInfo().Assembly.GetName().Name)));
 
+
+            services.AddAutoMapper();
             services.AddMvc();
         }
         

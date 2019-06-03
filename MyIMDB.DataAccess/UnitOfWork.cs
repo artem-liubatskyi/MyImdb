@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using MyIMDB.Data;
 using MyIMDB.Interfaces;
@@ -24,7 +23,6 @@ namespace MyIMDB.DataAccess
             transactionClosed = true;
             transaction = null;
         }
-
         public IRepository<TEntity> Repository<TEntity>() where TEntity : class, IEntity
         {
             if (!repositories.ContainsKey(typeof(TEntity)))

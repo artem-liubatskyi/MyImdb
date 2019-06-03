@@ -18,7 +18,7 @@ namespace MyIMDB.Data.Configurations
 
             builder.HasOne(x => x.Country)
                 .WithMany(x => x.MoviesCountries)
-                .HasForeignKey(x => x.MovieId);
+                .HasForeignKey(x => x.CountryId);
         }
     }
 }
