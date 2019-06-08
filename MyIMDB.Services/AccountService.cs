@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Threading.Tasks;
 using MyIMDB.ApiModels.Models;
 using MyIMDB.Data.Entities;
@@ -7,6 +6,10 @@ using MyIMDB.Interfaces;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using MyIMDB.Services.Hashing;
+using MyIMDB.Services.Helpers;
+using Microsoft.AspNetCore.Http;
+using System.Security.Cryptography;
+
 
 namespace MyIMDB.Services
 {
@@ -14,11 +17,13 @@ namespace MyIMDB.Services
     {
         private readonly IUnitOfWork Uow;
         private readonly IHasher Hasher;
+        private readonly IHttpContextAccessor httpAccessor;
 
-        public AccountService(IUnitOfWork uow, IHasher hasher)
+        public AccountService(IUnitOfWork uow, IHasher hasher, IHttpContextAccessor httpContextAccessor)
         {
             Uow = uow ?? throw new ArgumentNullException(nameof(uow));
             Hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
+            httpAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public async Task<User> Authenticate(string username, string password)
@@ -36,7 +41,6 @@ namespace MyIMDB.Services
 
             return  null;
         }
-
         public async Task<User> Create(User user, string password)
         {
             if (string.IsNullOrWhiteSpace(password))
@@ -58,8 +62,7 @@ namespace MyIMDB.Services
 
             return user;
         }
-
-        public async void Update(User userParam, string password = null)
+        public async Task Update(User userParam, string password = null)
         {
             var user = await Uow.Repository<User>().GetQueryable().FirstOrDefaultAsync(x=>x.Id==userParam.Id);
 
@@ -86,16 +89,6 @@ namespace MyIMDB.Services
             }
             Uow.Repository<User>().Update(userParam);
             await Uow.SaveChangesAsync();
-        }
-
-        public async void Delete(int id)
-        {
-            var user = await Uow.Repository<User>().GetQueryable().FirstOrDefaultAsync(x=>x.Id==id);
-            if (user != null)
-            {
-                Uow.Repository<User>().Delete(user);
-                await Uow.SaveChangesAsync();
-            }
         }
         public async Task<User> Get(long id)
         {
@@ -135,6 +128,49 @@ namespace MyIMDB.Services
             });
             return new UserPageViewModel() { FullName = user.FullName, Rates = rates };
 
+        }
+        public async Task RestorePassword(string newPassword, string hashParam)
+        { 
+            User user = await Uow.Repository<User>().GetQueryable()
+                .FirstOrDefaultAsync(x => Hasher.ByteToString(x.PasswordHash) == hashParam);
+
+            PasswordHash ph = await Hasher.CreatePasswordHash(newPassword);
+
+            user.PasswordHash = ph.Hash;
+            user.PasswordSalt = ph.Salt;
+
+            await Uow.SaveChangesAsync();
+        }
+        public async Task ForgotPassword(string email, NotificationServiceType type)
+        {
+            switch (type)
+            {
+                case NotificationServiceType.Email:
+
+                    User user = await Uow.Repository<User>().GetQueryable().FirstAsync(x => x.EMail == email);
+
+                    if (user == null)
+                    {
+                        throw new Exception($"User with {email} email not found");
+                    }
+
+                    string hostUrl = "http://localhost:4200";//httpAccessor.HttpContext.Request.Host.ToString();
+                    string url =  
+                        $"{hostUrl}/restoring-password/{Hasher.ByteToString(user.PasswordHash)}";
+
+                    var message = new NotificationMessage
+                    {
+                        Title = "Restoring password",
+                        To = email,
+                        Body = $"Click a link to restore password: {url}",
+                    };
+                    NotificationServiceFactory factory = new NotificationServiceFactory();
+                    await factory.CreateService(type).Send(message);
+                        
+                    break;
+                default:
+                    throw new ArgumentException();
+            }
         }
     }
 }

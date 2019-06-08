@@ -11,15 +11,20 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using MyIMDB.Web.Helpers;
+using MyIMDB.Services.Helpers;
 
 public class AuthenticationData
 {
     public string login { get; set; }
     public string password { get; set; }
 }
+public class RestorePasswordEmail
+{
+    public string email { get; set; }
+}
 namespace MyIMDB.Web.Controllers
 {
-    [Authorize]
+    
     [ApiController]
     [Route("[controller]")]
     public class AccountController : ControllerBase
@@ -32,13 +37,13 @@ namespace MyIMDB.Web.Controllers
             service = _service;
             _appSettings = appSettings.Value;
         }
-        [AllowAnonymous]
+        
         [HttpGet("registration-data")]
         public async Task<IActionResult> GetRegisterViewData()
         {
             return Ok(await service.GetRegistrationData());
         }
-        [AllowAnonymous]
+        
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody]AuthenticationData data)
         {
@@ -46,7 +51,7 @@ namespace MyIMDB.Web.Controllers
 
             if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
-           
+
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -60,16 +65,16 @@ namespace MyIMDB.Web.Controllers
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
-            
+
             return Ok(new
             {
-                id=user.Id,
-                login= user.Login,
+                id = user.Id,
+                login = user.Login,
                 fullName = user.FullName,
-                token= tokenString,
+                token = tokenString,
             });
         }
-        [AllowAnonymous]
+        
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody]RegisterModel model)
         {
@@ -83,17 +88,32 @@ namespace MyIMDB.Web.Controllers
                 GenderId = model.GenderId,
                 CountryId = model.CountryId
             };
-            
-             await service.Create(user, model.Password);
-             return Ok();
+
+            await service.Create(user, model.Password);
+            return Ok();
         }
 
+        [Authorize]
         [HttpGet("user-page")]
         public async Task<IActionResult> UserPage()
         {
             long userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
 
             return Ok(await service.GetUserPageModel(userId));
+        }
+        
+        [HttpPost("restore-password")]
+        public async Task<IActionResult> RestorePassword([FromBody]RestorePasswordApiModel model)
+        {
+            await service.RestorePassword(model.newPassword, model.passwordHash);
+            return Ok();
+        }
+        
+        [HttpPost("restore-password-request")]
+        public async Task<IActionResult> RestorePasswordRequest([FromBody]RestorePasswordEmail model)
+        {
+            await service.ForgotPassword(model.email, NotificationServiceType.Email);
+            return Ok();
         }
     }
 }

@@ -50,6 +50,7 @@ namespace MyIMDB.Services
                     .ThenInclude(x=>x.Person)
                         .ThenInclude(x=>x.MoviePersonsMovies)
                             .ThenInclude(x=>x.MoviePersonType)
+                .AsNoTracking()
                 .FirstOrDefaultAsync();
 
             if (entity == null)

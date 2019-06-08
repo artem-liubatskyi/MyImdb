@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +37,7 @@ namespace MyIMDB
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IRateRepository, RateRepository>();
             services.AddScoped<IAccountService, AccountService>();
-
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
             #region Authentication
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
