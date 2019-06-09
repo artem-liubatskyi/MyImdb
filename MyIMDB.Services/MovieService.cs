@@ -16,13 +16,16 @@ namespace MyIMDB.Services
         private readonly IUnitOfWork Uow;
         private readonly IRateRepository rateRepository;
         private readonly IMapper mapper;
+        private readonly IWatchlistRepository watchlistRepository;
 
-        public MovieService(IUnitOfWork uow, IRateRepository rateRepository, IMapper mapper)
+        public MovieService(IUnitOfWork uow, IRateRepository rateRepository, IMapper mapper, IWatchlistRepository watchlistRepository)
         {
             Uow = uow ?? throw new ArgumentNullException(nameof(uow));
             this.rateRepository = rateRepository ?? throw new ArgumentNullException(nameof(rateRepository));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            this.watchlistRepository = watchlistRepository ?? throw new ArgumentNullException(nameof(watchlistRepository));
         }
+
         private int getUserRate(Movie movie, long? userId)
         {
             Rate rate = null;
@@ -132,6 +135,57 @@ namespace MyIMDB.Services
             }
             else
                 throw new Exception("No movie with id: " + model.MovieId);
+        }
+
+        public async Task<bool> AddToWatchlist(long movieId, long userId)
+        {
+            var entity = await GetWatchLaterMoviesAsync(movieId, userId);
+
+            if (entity == null)
+                return false;
+
+            await watchlistRepository.AddAsync(entity);
+
+            await Uow.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RemoveFromWatchlist(long movieId, long userId)
+        {
+            var entity = await GetWatchLaterMoviesAsync(movieId, userId);
+
+            if (entity == null)
+                return false;
+
+            
+            watchlistRepository.Remove(entity);
+            await Uow.SaveChangesAsync();
+            return true;
+        }
+
+        private async Task<WatchLaterMovies> GetWatchLaterMoviesAsync(long movieId, long userId)
+        {
+            var movie = await Uow.Repository<Movie>().Get(movieId);
+
+            if (movie == null)
+                return null;
+
+            var user = await Uow.Repository<User>().Get(userId);
+
+            if (user == null)
+                return null;
+
+            var entity = new WatchLaterMovies
+            {
+                Movie = movie,
+                MovieId = movieId,
+                User = user,
+                UsereId = userId
+            };
+            //user.WatchLaterList = new List<WatchLaterMovies>();
+            //user.WatchLaterList.ToList().Add(entity);
+
+            return entity;
         }
     }
 }

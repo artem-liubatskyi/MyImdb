@@ -38,6 +38,7 @@ namespace MyIMDB
             services.AddTransient<IRateRepository, RateRepository>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddTransient<IWatchlistRepository, WatchlistRepository>();
             #region Authentication
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);

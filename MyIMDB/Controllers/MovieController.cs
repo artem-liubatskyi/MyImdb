@@ -41,6 +41,24 @@ namespace MyIMDB.Web.Controllers
             await service.AddRate(model, userId);
             return Ok();
         }
+        [Authorize]
+        [HttpPost("add-to-watchlist")]
+        public async Task<IActionResult> AddToWatchlist([FromBody]long movieId)
+        {
+            long userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
+
+            await service.AddToWatchlist(movieId, userId);
+            return Ok();
+        }
+        [Authorize]
+        [HttpPost("remove-from-watchlist")]
+        public async Task<IActionResult> RemoveFromWatchlist([FromBody]long movieId)
+        {
+            long userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
+
+            await service.RemoveFromWatchlist(movieId, userId);
+            return Ok();
+        }
         private long? GetUserId()
         {
             long? userId = null;

@@ -25,7 +25,6 @@ namespace MyIMDB.Services
             Hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
             httpAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
-
         public async Task<User> Authenticate(string username, string password)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
@@ -115,6 +114,7 @@ namespace MyIMDB.Services
                 .Include(u => u.Rates)
                 .ThenInclude(rate => rate.Movie)
                 .ThenInclude(movie=>movie.Rates)
+                .Include(u=>u.WatchLaterList)
                 .FirstOrDefaultAsync();
 
             var rates = user.Rates.Select(x => new MovieListViewModel()
@@ -126,7 +126,16 @@ namespace MyIMDB.Services
                 UsersRate = x.Value,
                 ImageUrl = x.Movie.ImageUrl
             });
-            return new UserPageViewModel() { FullName = user.FullName, Rates = rates };
+            var watchList = user.WatchLaterList.Select(x => new MovieListViewModel()
+            {
+                Id = x.MovieId,
+                Title = x.Movie.Title,
+                Year = x.Movie.Year,
+                AverageRate = x.Movie.Rates.Any() ? (x.Movie.Rates.Sum(m => m.Value) / x.Movie.Rates.Count()) : 0,
+                UsersRate = (user.Rates.Any()) ? (user.Rates.FirstOrDefault(rate => rate.ProfileId == user.Id).Value) : 0,
+                ImageUrl = x.Movie.ImageUrl
+            });
+            return new UserPageViewModel() { FullName = user.FullName, Rates = rates, WatchLaterMovies= watchList };
 
         }
         public async Task RestorePassword(string newPassword, string hashParam)
