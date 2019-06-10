@@ -8,5 +8,6 @@
         public double AverageRate { get; set; }
         public string ImageUrl { get; set; }
         public int UsersRate { get; set; }
+        public bool isInWatchlist { get; set; }
     }
 }

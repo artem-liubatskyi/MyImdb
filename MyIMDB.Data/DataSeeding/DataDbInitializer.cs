@@ -43,7 +43,7 @@ namespace MyIMDB.Data.DataSeeding
         private static readonly MoviePersonType[] types = new[]
                 {
                     new MoviePersonType() { Type = "Star"},
-                    new MoviePersonType() { Type = "Directer"}
+                    new MoviePersonType() { Type = "Director"}
                 };
         private static readonly Movie[] movies = new[]
                 {
@@ -56,6 +56,11 @@ namespace MyIMDB.Data.DataSeeding
                     Title = "The Green Mile", Year = 1999,
                     ImageUrl = "https://m.media-amazon.com/images/M/MV5BMTUxMzQyNjA5MF5BMl5BanBnXkFtZTYwOTU2NTY3._V1_UX182_CR0,0,182,268_AL_.jpg",
                     Description = "The lives of guards on Death Row are affected by one of their charges: a black man accused of child murder and rape, yet who has a mysterious gift."
+                    },
+                    new Movie(){
+                    Title = "The Godfather", Year = 1972,
+                    ImageUrl = "https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNWYtYzZlODY3ZTk3OTFlXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY268_CR3,0,182,268_AL_.jpg",
+                    Description = "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son."
                     }
                 };
 
@@ -67,11 +72,12 @@ namespace MyIMDB.Data.DataSeeding
             var male = genders.FirstOrDefault(x => x.Title == "Male");
             var female = genders.FirstOrDefault(x => x.Title == "Female");
 
-            var directerType = types.FirstOrDefault(x => x.Type == "Directer");
+            var directorType = types.FirstOrDefault(x => x.Type == "Director");
             var starType = types.FirstOrDefault(x => x.Type == "Star");
 
             var shawshank = movies.FirstOrDefault(x => x.Title == "The Shawshank Redemption");
             var greenMile = movies.FirstOrDefault(x => x.Title == "The Green Mile");
+            var godFather = movies.FirstOrDefault(x => x.Title == "The Godfather");
 
             if (!context.Countries.Any())
                 context.Countries.AddRange(countries);
@@ -110,7 +116,6 @@ namespace MyIMDB.Data.DataSeeding
                         CountryId=usa.Id,
                         ImageUrl ="https://m.media-amazon.com/images/M/MV5BMTc0MDMyMzI2OF5BMl5BanBnXkFtZTcwMzM2OTk1MQ@@._V1_UX214_CR0,0,214,317_AL_.jpg",
                         DateOfBirth = new DateTime(1937,5,1) },
-
                     new MoviePerson() { FullName="Tom Hanks",
                         Biography ="Thomas Jeffrey Hanks was born in Concord, California, to Janet Marylyn (Frager), a hospital worker, and Amos Mefford Hanks, an itinerant cook. His mother's family, originally surnamed Fraga, was entirely Portuguese, while his father was of mostly English ancestry. Tom grew up in what he has called a fractured family. He moved around a great ... ",
                         GenderId = male.Id,
@@ -129,7 +134,30 @@ namespace MyIMDB.Data.DataSeeding
                         CountryId = usa.Id,
                         ImageUrl ="https://m.media-amazon.com/images/M/MV5BMTgwNjUzOTE1N15BMl5BanBnXkFtZTYwNTU4NDQ0._V1_UY317_CR1,0,214,317_AL_.jpg",
                         DateOfBirth = new DateTime(1953,10,11) },
-
+                    new MoviePerson() { FullName="Al Pacino",
+                        Biography = "One of the greatest actors in all of film history, Al Pacino established himself during one of cinema's most vibrant decades, the 1970s, and has become an enduring and iconic figure in the world of American movies. Alfredo James Pacino was born on April 25, 1940 in Manhattan, New York City, to an Italian-American family.",
+                        GenderId = male.Id,
+                        CountryId = usa.Id,
+                        ImageUrl ="https://m.media-amazon.com/images/M/MV5BMTQzMzg1ODAyNl5BMl5BanBnXkFtZTYwMjAxODQ1._V1_.jpg",
+                        DateOfBirth = new DateTime(1953,4,25) },
+                    new MoviePerson() { FullName="Marlon Brando",
+                        Biography = "Marlon Brando is widely considered the greatest movie actor of all time, rivaled only by the more theatrically oriented Laurence Olivier in terms of esteem. Unlike Olivier, who preferred the stage to the screen, Brando concentrated his talents on movies after bidding the Broadway stage adieu in 1949, a decision for which he was severely criticized...",
+                        GenderId = male.Id,
+                        CountryId = usa.Id,
+                        ImageUrl ="https://m.media-amazon.com/images/M/MV5BMTg3MDYyMDE5OF5BMl5BanBnXkFtZTcwNjgyNTEzNA@@._V1_.jpg",
+                        DateOfBirth = new DateTime(1924,4,3) },
+                    new MoviePerson() { FullName="Francis Ford Coppola",
+                        Biography = "Francis Ford Coppola was born in 1939 in Detroit, Michigan, but grew up in a New York suburb in a creative, supportive Italian-American family. His father, Carmine Coppola, was a composer and musician. His mother, Italia Coppola (née Pennino), had been an actress. Francis Ford Coppola graduated with a degree in drama from Hofstra University, and ...",
+                        GenderId = male.Id,
+                        CountryId = usa.Id,
+                        ImageUrl ="https://m.media-amazon.com/images/M/MV5BMTM5NDU3OTgyNV5BMl5BanBnXkFtZTcwMzQxODA0NA@@._V1_UX214_CR0,0,214,317_AL_.jpg",
+                        DateOfBirth = new DateTime(1939,4,7) },
+                    new MoviePerson() { FullName="James Caan",
+                        Biography = "A masculine and enigmatic actor whose life and movie career have had more ups and downs than the average rollercoaster and whose selection of roles has arguably derailed him from achieving true superstar status, James Caan is New York-born and bred. He was born in the Bronx, to Sophie (Falkenstein) and Arthur Caan, Jewish immigrants from Germany. ...",
+                        GenderId = male.Id,
+                        CountryId = usa.Id,
+                        ImageUrl ="https://m.media-amazon.com/images/M/MV5BMTI5NjkyNDQ3NV5BMl5BanBnXkFtZTcwNjY5NTQ0Mw@@._V1_UX214_CR0,0,214,317_AL_.jpg",
+                        DateOfBirth = new DateTime(1940,3,26) },
                 };
                 context.MoviePersons.AddRange(persons);
                 context.SaveChanges();
@@ -145,19 +173,30 @@ namespace MyIMDB.Data.DataSeeding
                 var duncan = context.MoviePersons.FirstOrDefault(x => x.FullName == "Michael Clarke Duncan");
                 var morse = context.MoviePersons.FirstOrDefault(x => x.FullName == "David Morse");
 
+                var pachino = context.MoviePersons.FirstOrDefault(x => x.FullName == "Al Pacino");
+                var brando = context.MoviePersons.FirstOrDefault(x => x.FullName == "Marlon Brando");
+                var ford = context.MoviePersons.FirstOrDefault(x => x.FullName == "Francis Ford Coppola");
+                var caan = context.MoviePersons.FirstOrDefault(x => x.FullName == "James Caan");
+
                 var mpm = new[]
                 {
                     new MoviePersonsMovies(){ MovieId=shawshank.Id,MoviePersonId=freeman.Id,MoviePersonTypeId=starType.Id},
-                    new MoviePersonsMovies(){ MovieId=shawshank.Id,MoviePersonId=darabont.Id,MoviePersonTypeId=directerType.Id},
+                    new MoviePersonsMovies(){ MovieId=shawshank.Id,MoviePersonId=darabont.Id,MoviePersonTypeId=directorType.Id},
                     new MoviePersonsMovies(){ MovieId=shawshank.Id,MoviePersonId=robins.Id,MoviePersonTypeId=starType.Id},
 
-                    new MoviePersonsMovies(){ MovieId=greenMile.Id,MoviePersonId=darabont.Id,MoviePersonTypeId=directerType.Id},
+                    new MoviePersonsMovies(){ MovieId=greenMile.Id,MoviePersonId=darabont.Id,MoviePersonTypeId=directorType.Id},
                     new MoviePersonsMovies(){ MovieId=greenMile.Id,MoviePersonId=hanks.Id,MoviePersonTypeId=starType.Id},
                     new MoviePersonsMovies(){ MovieId=greenMile.Id,MoviePersonId=duncan.Id,MoviePersonTypeId=starType.Id},
                     new MoviePersonsMovies(){ MovieId=greenMile.Id,MoviePersonId=morse.Id,MoviePersonTypeId=starType.Id},
+
+                    new MoviePersonsMovies(){ MovieId=godFather.Id,MoviePersonId=pachino.Id,MoviePersonTypeId=starType.Id},
+                    new MoviePersonsMovies(){ MovieId=godFather.Id,MoviePersonId=brando.Id,MoviePersonTypeId=starType.Id},
+                    new MoviePersonsMovies(){ MovieId=godFather.Id,MoviePersonId=caan.Id,MoviePersonTypeId=starType.Id},
+                    new MoviePersonsMovies(){ MovieId=godFather.Id,MoviePersonId=ford.Id,MoviePersonTypeId=directorType.Id},
                 };
 
                 context.MoviePersonsMovies.AddRange(mpm);
+                context.SaveChanges();
             }
             if (!context.MoviesCountries.Any())
             {
@@ -165,8 +204,10 @@ namespace MyIMDB.Data.DataSeeding
                     new MoviesCountries(){CountryId=usa.Id, MovieId=shawshank.Id  },
                     new MoviesCountries(){CountryId=usa.Id, MovieId=greenMile.Id  },
                     new MoviesCountries(){CountryId=france.Id, MovieId=greenMile.Id  },
+                    new MoviesCountries(){CountryId=usa.Id, MovieId=godFather.Id  },
                 };
                 context.MoviesCountries.AddRange(mc);
+                context.SaveChanges();
             }
             if (!context.MoviesGenres.Any())
             {
@@ -179,8 +220,11 @@ namespace MyIMDB.Data.DataSeeding
                     new MoviesGenres(){ MovieId=greenMile.Id, GenreId= drama.Id},
                     new MoviesGenres(){ MovieId=greenMile.Id, GenreId= crime.Id},
                     new MoviesGenres(){ MovieId=greenMile.Id, GenreId= fantasy.Id},
+                    new MoviesGenres(){ MovieId=godFather.Id, GenreId= crime.Id},
+                    new MoviesGenres(){ MovieId=godFather.Id, GenreId= drama.Id},
                 };
                 context.MoviesGenres.AddRange(mg);
+                context.SaveChanges();
             }
             context.SaveChanges();
         }

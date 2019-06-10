@@ -25,7 +25,22 @@ namespace MyIMDB.Services
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             this.watchlistRepository = watchlistRepository ?? throw new ArgumentNullException(nameof(watchlistRepository));
         }
+        private async Task IsInWatchlist(IEnumerable<MovieListViewModel> model, long? userId)
+        {
+            if (userId != null)
+            {
+                var user = await Uow.Repository<User>().GetQueryable().Where(x => x.Id == userId)
+                    .Include(x => x.WatchLaterList).FirstAsync();
 
+                foreach (var movie in model)
+                {
+                    if(user.WatchLaterList.ToList().Exists(x=>x.MovieId==movie.Id))
+                    {
+                        movie.isInWatchlist = true;
+                    }
+                }
+            }
+        }
         private int getUserRate(Movie movie, long? userId)
         {
             Rate rate = null;
@@ -65,8 +80,8 @@ namespace MyIMDB.Services
             {
                 model.Genres = entity.Genres.Select(x => x.Genre).Select(x => x.Title).ToArray();
 
-                model.Directers = mapper.ProjectTo<MoviePersonListViewModel>
-                    (entity.MoviePersonsMovies.Where(x => x.MoviePersonType.Type == Constants.DirecterType).AsQueryable());
+                model.Directors = mapper.ProjectTo<MoviePersonListViewModel>
+                    (entity.MoviePersonsMovies.Where(x => x.MoviePersonType.Type == Constants.DirectorType).AsQueryable());
 
                 model.Stars = mapper.ProjectTo<MoviePersonListViewModel>
                     (entity.MoviePersonsMovies.Where(x => x.MoviePersonType.Type == Constants.StarType).AsQueryable());
@@ -78,6 +93,13 @@ namespace MyIMDB.Services
                 model.Countries = entity.MoviesCountries.Select(x => x.Country.Name);
             });
 
+            if (userId != null)
+            {
+                var user = await Uow.Repository<User>().GetQueryable().Where(x => x.Id == userId)
+                    .Include(x => x.WatchLaterList).FirstAsync();
+
+                model.isInWatchlist = user.WatchLaterList.ToList().Exists(x => x.MovieId == model.Id);
+            }
             return model;
         }
         public async Task<IEnumerable<MovieListViewModel>> GetListBySearchQuery(string searchQuerue, long? userId)
@@ -92,13 +114,13 @@ namespace MyIMDB.Services
                     Year = x.Year,
                     AverageRate = (x.Rates.Any() ? x.Rates.Sum(rate => rate.Value) / x.Rates.Count() : 0),
                     ImageUrl = x.ImageUrl,
-                    UsersRate = (x.Rates.Any() & userId != null) ? (x.Rates.FirstOrDefault(rate => rate.ProfileId == userId).Value) : 0
+                    UsersRate = (x.Rates.Any() & userId != null) ? (x.Rates.FirstOrDefault(rate => rate.ProfileId == userId).Value) : 0,
                 })
                 .ToArrayAsync();
         }
         public async Task<IEnumerable<MovieListViewModel>> GetTop(long? userId, int topSize = 250)
-        {
-            return await Uow.Repository<Movie>().GetQueryable()
+        {    
+            var model = await Uow.Repository<Movie>().GetQueryable()
                 .Include(movie => movie.Rates)
                 .Select(x => new MovieListViewModel()
                 {
@@ -107,11 +129,13 @@ namespace MyIMDB.Services
                     Year = x.Year,
                     AverageRate = (x.Rates.Any() ? x.Rates.Sum(rate => rate.Value) / x.Rates.Count() : 0),
                     ImageUrl = x.ImageUrl,
-                    UsersRate = (x.Rates.Any() & userId != null) ? (x.Rates.FirstOrDefault(rate => rate.ProfileId == userId).Value) : 0
+                    UsersRate = (x.Rates.Any() & userId != null) ? (x.Rates.FirstOrDefault(rate => rate.ProfileId == userId).Value) : 0,
                 })
-                .OrderByDescending(x=>x.AverageRate)
+                .OrderByDescending(x => x.AverageRate)
                 .Take(topSize)
                 .ToArrayAsync();
+            await IsInWatchlist(model, userId);
+            return model;
         }
         public async Task AddRate(RateViewModel model, long userId)
         {
@@ -182,8 +206,6 @@ namespace MyIMDB.Services
                 User = user,
                 UsereId = userId
             };
-            //user.WatchLaterList = new List<WatchLaterMovies>();
-            //user.WatchLaterList.ToList().Add(entity);
 
             return entity;
         }

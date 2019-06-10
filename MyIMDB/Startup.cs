@@ -11,10 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using MyIMDB.Data;
-using MyIMDB.DataAccess;
-using MyIMDB.Interfaces;
 using MyIMDB.Services;
-using MyIMDB.Services.Hashing;
+using MyIMDB.Services.Configuration;
 using MyIMDB.Web.Helpers;
 
 namespace MyIMDB
@@ -28,21 +26,11 @@ namespace MyIMDB
             Configuration = configuration;
         }
 
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureAuthentication(IServiceCollection services)
         {
-            services.AddCors();
-            services.AddTransient<IHasher, Hasher>();
-            services.AddTransient<IMovieService, MovieService>();
-            services.AddTransient<IMoviePersonService, MoviePersonService>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddTransient<IRateRepository, RateRepository>();
-            services.AddScoped<IAccountService, AccountService>();
-            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddTransient<IWatchlistRepository, WatchlistRepository>();
-            #region Authentication
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
-            
+
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
             services.AddAuthentication(x =>
@@ -76,13 +64,20 @@ namespace MyIMDB
                     ValidateAudience = false
                 };
             });
+        }
 
-            #endregion
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddCors();
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+            services.RegisterServiceDependencies();
+
+            ConfigureAuthentication(services);
             
             services.AddDbContext<ImdbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly(typeof(ImdbContext).GetTypeInfo().Assembly.GetName().Name)));
-
+            
 
             services.AddAutoMapper();
             services.AddMvc();

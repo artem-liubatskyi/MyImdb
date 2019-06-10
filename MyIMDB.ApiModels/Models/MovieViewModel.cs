@@ -12,8 +12,9 @@ namespace MyIMDB.ApiModels.Models
         public double AverageRate { get; set; }
         public double UsersRate { get; set; }
         public IEnumerable<string> Genres { get; set; }
-        public IEnumerable<MoviePersonListViewModel> Directers { get; set; }
+        public IEnumerable<MoviePersonListViewModel> Directors { get; set; }
         public IEnumerable<MoviePersonListViewModel> Stars { get; set; }
         public virtual IEnumerable<string> Countries { get; set; }
+        public bool isInWatchlist { get; set; }
     }
 }

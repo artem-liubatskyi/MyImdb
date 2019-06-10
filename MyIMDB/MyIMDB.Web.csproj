@@ -20,9 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyIMDB.ApiModels\MyIMDB.ApiModels.csproj" />
-    <ProjectReference Include="..\MyIMDB.DataAccess\MyIMDB.DataAccess.csproj" />
     <ProjectReference Include="..\MyIMDB.Data\MyIMDB.Data.csproj" />
-    <ProjectReference Include="..\MyIMDB.Interfaces\MyIMDB.Interfaces.csproj" />
     <ProjectReference Include="..\MyIMDB.Services\MyIMDB.Services.csproj" />
   </ItemGroup>
 
