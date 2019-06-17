@@ -1,4 +1,4 @@
-﻿namespace MyIMDB.Interfaces
+﻿namespace MyIMDB.Data.Abstraction
 {
     public interface IEntity
     {

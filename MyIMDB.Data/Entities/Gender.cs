@@ -1,4 +1,4 @@
-﻿using MyIMDB.Interfaces;
+﻿using MyIMDB.Data.Abstraction;
 
 namespace MyIMDB.Data.Entities
 {

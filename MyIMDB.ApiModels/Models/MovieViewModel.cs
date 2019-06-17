@@ -10,7 +10,7 @@ namespace MyIMDB.ApiModels.Models
         public string ImageUrl { get; set; }
         public string Description { get; set; }
         public double AverageRate { get; set; }
-        public double UsersRate { get; set; }
+        public int? UsersRate { get; set; }
         public IEnumerable<string> Genres { get; set; }
         public IEnumerable<MoviePersonListViewModel> Directors { get; set; }
         public IEnumerable<MoviePersonListViewModel> Stars { get; set; }

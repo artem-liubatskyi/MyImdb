@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using MyIMDB.Data.Abstraction;
-using MyIMDB.Interfaces;
-
-namespace MyIMDB.Data.Entities
+﻿namespace MyIMDB.Data.Entities
 {
     public class MoviePersonsMovies
     {

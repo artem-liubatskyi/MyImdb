@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using MyIMDB.Interfaces;
+using MyIMDB.Data.Abstraction;
 
 namespace MyIMDB.Data.Entities
 {
@@ -19,9 +19,8 @@ namespace MyIMDB.Data.Entities
 
         public long? CountryId { get; set; }
         public virtual Country Country { get; set; }
-
-        public virtual IEnumerable<WatchLaterMovies> WatchLaterList { get; set; }
-        public virtual IEnumerable<Rate> Rates { get; set; }
+        
+        public virtual IEnumerable<UserMovie> Movies { get; set; }
 
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }

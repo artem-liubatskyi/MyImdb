@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MyIMDB.Data.Abstraction;
 
-namespace MyIMDB.Interfaces
+namespace MyIMDB.DataAccess.Interfaces
 {
     public interface IRepository<TEntity> where TEntity :  IEntity
     {

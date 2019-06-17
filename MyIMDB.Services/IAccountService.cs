@@ -11,7 +11,7 @@ namespace MyIMDB.Services
     public interface IAccountService
     {
         Task<User> Authenticate(string username, string password);
-        Task<User> Create(User user, string password);
+        Task<User> Create(RegisterModel model);
         Task Update(User userParam, string password = null);
         Task<User> Get(long id);
         Task<RegisterDataModel> GetRegistrationData();

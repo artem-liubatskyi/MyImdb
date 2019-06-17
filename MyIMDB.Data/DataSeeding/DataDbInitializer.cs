@@ -161,8 +161,7 @@ namespace MyIMDB.Data.DataSeeding
                 };
                 context.MoviePersons.AddRange(persons);
                 context.SaveChanges();
-            }
-            
+            }        
             if (!context.MoviePersonsMovies.Any())
             {
                 var freeman = context.MoviePersons.FirstOrDefault(x=>x.FullName== "Morgan Freeman");

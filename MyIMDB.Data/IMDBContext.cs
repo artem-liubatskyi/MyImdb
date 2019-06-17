@@ -22,9 +22,8 @@ namespace MyIMDB.Data
                         .ApplyConfiguration(new MoviePersonConfiguration())
                         .ApplyConfiguration(new MoviePersonsMoviesConfiguration())
                         .ApplyConfiguration(new MoviePersonTypeConfiguration())
-                        .ApplyConfiguration(new RateConfiguration())
-                        .ApplyConfiguration(new UserConfiguration())
-                        .ApplyConfiguration(new WatchLaterMoviesConfiguration());
+                        .ApplyConfiguration(new UserMoviesConfiguration())
+                        .ApplyConfiguration(new UserConfiguration());
 
             base.OnModelCreating(modelBuilder);
 
@@ -34,7 +33,7 @@ namespace MyIMDB.Data
         public DbSet<Movie> Movies { get; set; }
         public DbSet<MoviePerson> MoviePersons { get; set; }
 
-        public DbSet<Rate> Rates { get; set; }
+        public DbSet<UserMovie> UserMovies { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Gender> Genders { get; set; }
         public DbSet<Country> Countries { get; set; }
@@ -43,7 +42,6 @@ namespace MyIMDB.Data
         public DbSet<MoviesGenres> MoviesGenres { get; set; }
         public DbSet<MoviesCountries> MoviesCountries { get; set; }
         public DbSet<MoviePersonsMovies> MoviePersonsMovies { get; set; }
-
-        public DbSet<WatchLaterMovies> WatchLaterMovies { get; set; }
+        
     }
 }

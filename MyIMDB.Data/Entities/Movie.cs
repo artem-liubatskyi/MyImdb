@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using MyIMDB.Interfaces;
+using MyIMDB.Data.Abstraction;
 
 namespace MyIMDB.Data.Entities
 {
@@ -19,8 +19,10 @@ namespace MyIMDB.Data.Entities
         
         public virtual IEnumerable<MoviesGenres> Genres { get; set; }
 
-        public virtual IEnumerable<Rate> Rates { get; set; }
+        public virtual IEnumerable<UserMovie> UserMovies { get; set; }
 
-        public double AverageRate { get; set; }
+        public long RatesSum { get; set; }
+
+        public long RatesCount { get; set; }
     }
 }

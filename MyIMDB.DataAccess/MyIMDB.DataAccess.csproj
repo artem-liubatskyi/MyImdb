@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyIMDB.Data\MyIMDB.Data.csproj" />
-    <ProjectReference Include="..\MyIMDB.Interfaces\MyIMDB.Interfaces.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -12,9 +12,6 @@ namespace MyIMDB.Data.Configurations
 
             builder.HasOne(x =>x.Gender);
             builder.HasOne(x => x.Country);
-            builder.HasMany(x => x.Rates)
-                .WithOne(x => x.Profile)
-                .HasForeignKey(x => x.ProfileId);
         }
     }
 }

@@ -10,14 +10,14 @@ using MyIMDB.Data;
 namespace MyIMDB.Data.Migrations
 {
     [DbContext(typeof(ImdbContext))]
-    [Migration("20190603140550_Fix MoviesCountries")]
-    partial class FixMoviesCountries
+    [Migration("20190614212756_Merge WatchList with Rates into UserMovie")]
+    partial class MergeWatchListwithRatesintoUserMovie
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -66,11 +66,13 @@ namespace MyIMDB.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<double>("AverageRate");
-
                     b.Property<string>("Description");
 
                     b.Property<string>("ImageUrl");
+
+                    b.Property<long>("RatesCount");
+
+                    b.Property<long>("RatesSum");
 
                     b.Property<string>("Title");
 
@@ -164,21 +166,6 @@ namespace MyIMDB.Data.Migrations
                     b.ToTable("MovieGenre");
                 });
 
-            modelBuilder.Entity("MyIMDB.Data.Entities.Rate", b =>
-                {
-                    b.Property<long>("MovieId");
-
-                    b.Property<long>("ProfileId");
-
-                    b.Property<int>("Value");
-
-                    b.HasKey("MovieId", "ProfileId");
-
-                    b.HasIndex("ProfileId");
-
-                    b.ToTable("Rate");
-                });
-
             modelBuilder.Entity("MyIMDB.Data.Entities.User", b =>
                 {
                     b.Property<long>("Id")
@@ -214,17 +201,21 @@ namespace MyIMDB.Data.Migrations
                     b.ToTable("User");
                 });
 
-            modelBuilder.Entity("MyIMDB.Data.Entities.WatchLaterMovies", b =>
+            modelBuilder.Entity("MyIMDB.Data.Entities.UserMovie", b =>
                 {
-                    b.Property<long>("UsereId");
-
                     b.Property<long>("MovieId");
 
-                    b.HasKey("UsereId", "MovieId");
+                    b.Property<long>("UserId");
 
-                    b.HasIndex("MovieId");
+                    b.Property<bool>("IsInWatchlist");
 
-                    b.ToTable("WatchLaterMovie");
+                    b.Property<int?>("Rate");
+
+                    b.HasKey("MovieId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserMovie");
                 });
 
             modelBuilder.Entity("MyIMDB.Data.Entities.MoviePerson", b =>
@@ -282,19 +273,6 @@ namespace MyIMDB.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("MyIMDB.Data.Entities.Rate", b =>
-                {
-                    b.HasOne("MyIMDB.Data.Entities.Movie", "Movie")
-                        .WithMany("Rates")
-                        .HasForeignKey("MovieId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("MyIMDB.Data.Entities.User", "Profile")
-                        .WithMany("Rates")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("MyIMDB.Data.Entities.User", b =>
                 {
                     b.HasOne("MyIMDB.Data.Entities.Country", "Country")
@@ -306,16 +284,16 @@ namespace MyIMDB.Data.Migrations
                         .HasForeignKey("GenderId");
                 });
 
-            modelBuilder.Entity("MyIMDB.Data.Entities.WatchLaterMovies", b =>
+            modelBuilder.Entity("MyIMDB.Data.Entities.UserMovie", b =>
                 {
                     b.HasOne("MyIMDB.Data.Entities.Movie", "Movie")
-                        .WithMany()
+                        .WithMany("UserMovies")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("MyIMDB.Data.Entities.User", "User")
-                        .WithMany("WatchLaterList")
-                        .HasForeignKey("UsereId")
+                        .WithMany("Movies")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

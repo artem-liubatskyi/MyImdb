@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MyIMDB.ApiModels.Models;
 using MyIMDB.Data.Entities;
-using MyIMDB.Interfaces;
+using MyIMDB.DataAccess.Interfaces;
 
 namespace MyIMDB.Services
 {
@@ -26,6 +25,7 @@ namespace MyIMDB.Services
                 .Include(x=>x.MoviePersonsMovies)
                     .ThenInclude(x=>x.Movie)
                 .FirstOrDefaultAsync();
+
             var movies = entity.MoviePersonsMovies.Select(x => 
             new MovieListViewModel()
             {
@@ -33,7 +33,6 @@ namespace MyIMDB.Services
                 Title=x.Movie.Title,
                 Year =x.Movie.Year,
                 ImageUrl = x.Movie.ImageUrl,
-                AverageRate = x.Movie.AverageRate,
                 UsersRate = 0
             }).ToArray();
 

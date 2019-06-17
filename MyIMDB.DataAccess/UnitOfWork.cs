@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
 using MyIMDB.Data;
-using MyIMDB.Interfaces;
+using MyIMDB.Data.Abstraction;
+using MyIMDB.DataAccess.Interfaces;
 
 namespace MyIMDB.DataAccess
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork, IDisposable
     {
         private readonly Dictionary<Type, object> repositories;
         private IDbContextTransaction transaction;
         private readonly object createdRepositoryLock;
         private bool transactionClosed;
         private readonly ImdbContext dbContext;
+        private bool disposed = false;
 
         public UnitOfWork(ImdbContext dbContext)
         {
@@ -38,7 +40,21 @@ namespace MyIMDB.DataAccess
 
             return repositories[typeof(TEntity)] as IRepository<TEntity>;
         }
+        public IUserMovieRepository UserMoviesRepository()
+        {
+            if (!repositories.ContainsKey(typeof(UserMovieRepository)))
+            {
+                lock (createdRepositoryLock)
+                {
+                    if (!repositories.ContainsKey(typeof(UserMovieRepository)))
+                    {
+                        repositories.Add(typeof(UserMovieRepository), new UserMovieRepository(dbContext));
+                    }
+                }
+            }
 
+            return repositories[typeof(UserMovieRepository)] as IUserMovieRepository;
+        }
         public void BeginTransaction()
         {
             if (transactionClosed || transaction == null)
@@ -69,6 +85,19 @@ namespace MyIMDB.DataAccess
         public async Task<int> SaveChangesAsync()
         {
             return await dbContext.SaveChangesAsync();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(!disposed)
+                if (disposing)
+                    dbContext.Dispose();
+            disposed = true;
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

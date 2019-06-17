@@ -2,14 +2,13 @@
 using System.Threading.Tasks;
 using MyIMDB.ApiModels.Models;
 using MyIMDB.Data.Entities;
-using MyIMDB.Interfaces;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using MyIMDB.Services.Hashing;
 using MyIMDB.Services.Helpers;
 using Microsoft.AspNetCore.Http;
-using System.Security.Cryptography;
-
+using AutoMapper;
+using MyIMDB.DataAccess.Interfaces;
 
 namespace MyIMDB.Services
 {
@@ -18,13 +17,16 @@ namespace MyIMDB.Services
         private readonly IUnitOfWork Uow;
         private readonly IHasher Hasher;
         private readonly IHttpContextAccessor httpAccessor;
+        private readonly IMapper mapper;
 
-        public AccountService(IUnitOfWork uow, IHasher hasher, IHttpContextAccessor httpContextAccessor)
+        public AccountService(IUnitOfWork uow, IHasher hasher, IHttpContextAccessor httpAccessor, IMapper mapper)
         {
             Uow = uow ?? throw new ArgumentNullException(nameof(uow));
             Hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
-            httpAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            this.httpAccessor = httpAccessor ?? throw new ArgumentNullException(nameof(httpAccessor));
+            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
+
         public async Task<User> Authenticate(string username, string password)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
@@ -40,18 +42,20 @@ namespace MyIMDB.Services
 
             return  null;
         }
-        public async Task<User> Create(User user, string password)
+        public async Task<User> Create(RegisterModel model)
         {
-            if (string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(model.Password))
                 throw new Exception("Password is required");
 
-            if (await Uow.Repository<User>().GetQueryable().AnyAsync(x => x.Login == user.Login))
-                throw new Exception("Username \"" + user.Login + "\" is already taken");
+            if (await Uow.Repository<User>().GetQueryable().AnyAsync(x => x.Login == model.Login))
+                throw new Exception("Username \"" + model.Login + "\" is already taken");
 
-            if (await Uow.Repository<User>().GetQueryable().AnyAsync(x => x.EMail == user.EMail))
-                throw new Exception("Email \"" + user.EMail + "\" is already taken");
+            if (await Uow.Repository<User>().GetQueryable().AnyAsync(x => x.EMail == model.Email))
+                throw new Exception("Email \"" + model.Email + "\" is already taken");
 
-            PasswordHash ph = await Hasher.CreatePasswordHash(password);
+            var user = mapper.Map<RegisterModel, User>(model);
+
+            PasswordHash ph = await Hasher.CreatePasswordHash(model.Password);
 
             user.PasswordHash = ph.Hash;
             user.PasswordSalt = ph.Salt;
@@ -95,48 +99,21 @@ namespace MyIMDB.Services
         }
         public async Task<RegisterDataModel> GetRegistrationData()
         {
-            var genders = await Uow.Repository<Gender>().GetQueryable().Select(x=>new GenderModel
-            {
-                Id=x.Id,
-                Title=x.Title
-            }).ToArrayAsync();
+            var genders = mapper.Map<Gender[],GenderModel[]>(await Uow.Repository<Gender>().GetQueryable().ToArrayAsync());
 
-            var countries = await Uow.Repository<Country>().GetQueryable().Select(x=> new CountryModel
-            {
-                Id =x.Id,
-                Name=x.Name
-            }).ToArrayAsync();
+            var countries = mapper.Map<Country[],CountryModel[]>(await Uow.Repository<Country>().GetQueryable().ToArrayAsync());
+
             return new RegisterDataModel() { Genders = genders, Countries = countries };
         }
         public async Task<UserPageViewModel> GetUserPageModel(long userId)
         {
             var user = await Uow.Repository<User>().GetQueryable().Where(x=>x.Id==userId)
-                .Include(u => u.Rates)
-                .ThenInclude(rate => rate.Movie)
-                .ThenInclude(movie=>movie.Rates)
-                .Include(u=>u.WatchLaterList)
+                .Include(u => u.Movies)
+                    .ThenInclude(rate => rate.Movie)
+                        .ThenInclude(movie=>movie.UserMovies)
                 .FirstOrDefaultAsync();
 
-            var rates = user.Rates.Select(x => new MovieListViewModel()
-            {
-                Id = x.MovieId,
-                Title = x.Movie.Title,
-                Year = x.Movie.Year,
-                AverageRate = x.Movie.Rates.Any() ? (x.Movie.Rates.Sum(m=>m.Value)/x.Movie.Rates.Count()) : 0,
-                UsersRate = x.Value,
-                ImageUrl = x.Movie.ImageUrl
-            });
-            var watchList = user.WatchLaterList.Select(x => new MovieListViewModel()
-            {
-                Id = x.MovieId,
-                Title = x.Movie.Title,
-                Year = x.Movie.Year,
-                AverageRate = x.Movie.Rates.Any() ? (x.Movie.Rates.Sum(m => m.Value) / x.Movie.Rates.Count()) : 0,
-                UsersRate = (user.Rates.Any()) ? (user.Rates.FirstOrDefault(rate => rate.ProfileId == user.Id).Value) : 0,
-                ImageUrl = x.Movie.ImageUrl
-            });
-            return new UserPageViewModel() { FullName = user.FullName, Rates = rates, WatchLaterMovies= watchList };
-
+           return mapper.Map<User, UserPageViewModel>(user);
         }
         public async Task RestorePassword(string newPassword, string hashParam)
         { 

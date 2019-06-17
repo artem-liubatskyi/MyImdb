@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using MyIMDB.Interfaces;
+using MyIMDB.Data.Abstraction;
 
 namespace MyIMDB.Data.Configurations
 {

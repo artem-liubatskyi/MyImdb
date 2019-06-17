@@ -18,10 +18,6 @@ public class AuthenticationData
     public string login { get; set; }
     public string password { get; set; }
 }
-public class RestorePasswordEmail
-{
-    public string email { get; set; }
-}
 namespace MyIMDB.Web.Controllers
 {
     
@@ -78,18 +74,7 @@ namespace MyIMDB.Web.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody]RegisterModel model)
         {
-            var user = new User()
-            {
-                Login = model.Login,
-                FullName = model.FullName,
-                EMail = model.Email,
-                DateOfBirth = model.DateOfBirth,
-                Biography = model.About,
-                GenderId = model.GenderId,
-                CountryId = model.CountryId
-            };
-
-            await service.Create(user, model.Password);
+            await service.Create(model);
             return Ok();
         }
 
@@ -110,9 +95,9 @@ namespace MyIMDB.Web.Controllers
         }
         
         [HttpPost("restore-password-request")]
-        public async Task<IActionResult> RestorePasswordRequest([FromBody]RestorePasswordEmail model)
+        public async Task<IActionResult> RestorePasswordRequest([FromForm]string email)
         {
-            await service.ForgotPassword(model.email, NotificationServiceType.Email);
+            await service.ForgotPassword(email, NotificationServiceType.Email);
             return Ok();
         }
     }

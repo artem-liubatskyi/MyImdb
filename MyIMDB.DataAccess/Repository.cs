@@ -2,7 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using MyIMDB.Interfaces;
+using MyIMDB.Data.Abstraction;
+using MyIMDB.DataAccess.Interfaces;
 
 namespace MyIMDB.DataAccess
 {

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using MyIMDB.Interfaces;
+using MyIMDB.Data.Abstraction;
 
 namespace MyIMDB.Data.Entities
 {
