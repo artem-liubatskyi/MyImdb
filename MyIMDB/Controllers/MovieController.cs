@@ -1,10 +1,13 @@
-﻿using System;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyIMDB.ApiModels.Models;
+using MyIMDB.Data.Entities;
 using MyIMDB.Services;
+using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace MyIMDB.Web.Controllers
 {
@@ -13,24 +16,34 @@ namespace MyIMDB.Web.Controllers
     public class MoviesController : ControllerBase
     {
         private readonly IMovieService service;
-        public MoviesController(IMovieService service)
+        private readonly IMapper mapper;
+
+        public MoviesController(IMovieService service, IMapper mapper)
         {
             this.service = service ?? throw new ArgumentNullException(nameof(service));
+            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
+
         [HttpGet("{id?}")]
         public async Task<IActionResult> Get(long id)
         {
-            return Ok(await service.Get(id, GetUserId()));
+            var userId = GetUserId();
+            var entity = await service.Get(id, userId);
+            return Ok(mapper.Map<Movie, MovieViewModel>(entity, opt => opt.Items.Add("userId", userId)));
         }
         [HttpGet("search/{searchQuery?}")]
         public async Task<IActionResult> GetBySearchQuery(string searchQuery)
         {
-            return Ok(await service.GetListBySearchQuery(searchQuery, GetUserId()));
+            var userId = GetUserId();
+            var entity = await service.GetListBySearchQuery(searchQuery, GetUserId());
+            return Ok(mapper.Map<IEnumerable<Movie>, MovieListViewModel[]>(entity, opt => opt.Items.Add("userId", userId)));
         }
         [HttpGet("top")]
         public async Task<IActionResult> GetTop()
         {
-            return Ok(await service.GetTop(GetUserId()));
+            var userId = GetUserId();
+            var entity = await service.GetTop(userId);
+            return Ok(mapper.Map<IEnumerable<Movie>, MovieListViewModel[]>(entity, opt => opt.Items.Add("userId", userId)));
         }
         [Authorize]
         [HttpPost("rate")]

@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using MyIMDB.Data;
 using MyIMDB.Services;
 using MyIMDB.Services.Configuration;
+using MyIMDB.Services.MapperProfiles;
 using MyIMDB.Web.Helpers;
 
 namespace MyIMDB
@@ -75,9 +76,14 @@ namespace MyIMDB
             
             services.AddDbContext<ImdbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            
 
-            services.AddAutoMapper();
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new ServicesMapperProfile());
+            });
+
+            services.AddSingleton(mappingConfig.CreateMapper());
+
             services.AddMvc();
         }
         

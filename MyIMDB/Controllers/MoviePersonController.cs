@@ -20,10 +20,5 @@ namespace MyIMDB.Web.Controllers
         {
             return Ok(await service.Get(id));
         }
-        [HttpGet("search/{searchQuerue}")]
-        public async Task<IActionResult> GetBySearchQuery(string searchQuerue)
-        {
-            return Ok(await service.GetListBySearchQuery(searchQuerue));
-        }
     }
 }

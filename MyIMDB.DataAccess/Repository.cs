@@ -15,7 +15,6 @@ namespace MyIMDB.DataAccess
         {
             DbContext = dbContext;
         }
-
         public async Task<TEntity> Add(TEntity entity)
         {
             await DbContext.AddAsync(entity);

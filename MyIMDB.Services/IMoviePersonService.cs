@@ -9,6 +9,5 @@ namespace MyIMDB.Services
     public interface IMoviePersonService
     {
         Task<MoviePersonViewModel> Get(long id);
-        Task<IEnumerable<MoviePersonListViewModel>> GetListBySearchQuery(string searchQuerue);
     }
 }

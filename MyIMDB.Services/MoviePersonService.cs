@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MyIMDB.ApiModels.Models;
+using MyIMDB.DataAccess.Interfaces;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using MyIMDB.ApiModels.Models;
-using MyIMDB.Data.Entities;
-using MyIMDB.DataAccess.Interfaces;
 
 namespace MyIMDB.Services
 {
@@ -19,24 +16,20 @@ namespace MyIMDB.Services
         }
         public async Task<MoviePersonViewModel> Get(long id)
         {
-            var entity = await Uow.Repository<MoviePerson>().GetQueryable().Where(x=>x.Id==id)
-                .Include(x=>x.Country)
-                .Include(x=>x.Gender)
-                .Include(x=>x.MoviePersonsMovies)
-                    .ThenInclude(x=>x.Movie)
-                .FirstOrDefaultAsync();
+            var entity = await Uow.MoviePersonRepository.GetFull(id);
 
-            var movies = entity.MoviePersonsMovies.Select(x => 
+            var movies = entity.MoviePersonsMovies.Select(x =>
             new MovieListViewModel()
             {
-                Id= x.MovieId,
-                Title=x.Movie.Title,
-                Year =x.Movie.Year,
+                Id = x.MovieId,
+                Title = x.Movie.Title,
+                Year = x.Movie.Year,
                 ImageUrl = x.Movie.ImageUrl,
                 UsersRate = 0
             }).ToArray();
 
-            var model = new MoviePersonViewModel() {
+            var model = new MoviePersonViewModel()
+            {
                 Id = entity.Id,
                 FullName = entity.FullName,
                 DateOfBirth = entity.DateOfBirth.ToLongDateString(),
@@ -48,14 +41,6 @@ namespace MyIMDB.Services
             };
 
             return model;
-        }
-
-        public async Task<IEnumerable<MoviePersonListViewModel>> GetListBySearchQuery(string searchQuerue)
-        {
-            return await Uow.Repository<MoviePerson>().GetQueryable()
-               .Where(x => x.FullName.Contains(searchQuerue))
-               .Select(x => new MoviePersonListViewModel() { Id = x.Id, FullName = x.FullName, Year = x.DateOfBirth.Year,ImageUrl = x.ImageUrl })
-               .ToArrayAsync();
         }
     }
 }

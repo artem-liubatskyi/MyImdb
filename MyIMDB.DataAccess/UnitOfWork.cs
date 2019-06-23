@@ -1,59 +1,87 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore.Storage;
 using MyIMDB.Data;
-using MyIMDB.Data.Abstraction;
+using MyIMDB.Data.Entities;
 using MyIMDB.DataAccess.Interfaces;
+using System;
+using System.Threading.Tasks;
 
 namespace MyIMDB.DataAccess
 {
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
-        private readonly Dictionary<Type, object> repositories;
         private IDbContextTransaction transaction;
-        private readonly object createdRepositoryLock;
         private bool transactionClosed;
         private readonly ImdbContext dbContext;
         private bool disposed = false;
 
+        private IUserMovieRepository userMoviesRepository;
+        private IMovieRepository movieRepository;
+        private IUserRepository userRepository;
+        private IMoviePersonRepository moviePersonRepository;
+        private IRepository<Gender> genderRepository;
+        private IRepository<Country> countryRepository;
+
+        public IUserMovieRepository UserMoviesRepository
+        {
+            get
+            {
+                if (userMoviesRepository == null)
+                    userMoviesRepository = new UserMovieRepository(dbContext);
+                return userMoviesRepository;
+            }
+        }
+        public IMovieRepository MovieRepository
+        {
+            get
+            {
+                if (movieRepository == null)
+                    movieRepository = new MovieRepository(dbContext);
+                return movieRepository;
+            }
+        }
+        public IUserRepository UserRepository
+        {
+            get
+            {
+                if (userRepository == null)
+                    userRepository = new UserRepository(dbContext);
+                return userRepository;
+            }
+        }
+        public IMoviePersonRepository MoviePersonRepository
+        {
+            get
+            {
+                if (moviePersonRepository == null)
+                    moviePersonRepository = new MoviePersonRepository(dbContext);
+                return moviePersonRepository;
+            }
+        }
+
+        public IRepository<Gender> GenderRepository
+        {
+            get
+            {
+                if (genderRepository == null)
+                    genderRepository = new Repository<Gender>(dbContext);
+                return genderRepository;
+            }
+        }
+        public IRepository<Country> CountryRepository
+        {
+            get
+            {
+                if (countryRepository == null)
+                    countryRepository = new Repository<Country>(dbContext);
+                return countryRepository;
+            }
+        }
+
         public UnitOfWork(ImdbContext dbContext)
         {
             this.dbContext = dbContext;
-            repositories = new Dictionary<Type, object>();
-            createdRepositoryLock = new object();
             transactionClosed = true;
             transaction = null;
-        }
-        public IRepository<TEntity> Repository<TEntity>() where TEntity : class, IEntity
-        {
-            if (!repositories.ContainsKey(typeof(TEntity)))
-            {
-                lock (createdRepositoryLock)
-                {
-                    if (!repositories.ContainsKey(typeof(TEntity)))
-                    {
-                        repositories.Add(typeof(TEntity), new Repository<TEntity>(dbContext));
-                    }
-                }
-            }
-
-            return repositories[typeof(TEntity)] as IRepository<TEntity>;
-        }
-        public IUserMovieRepository UserMoviesRepository()
-        {
-            if (!repositories.ContainsKey(typeof(UserMovieRepository)))
-            {
-                lock (createdRepositoryLock)
-                {
-                    if (!repositories.ContainsKey(typeof(UserMovieRepository)))
-                    {
-                        repositories.Add(typeof(UserMovieRepository), new UserMovieRepository(dbContext));
-                    }
-                }
-            }
-
-            return repositories[typeof(UserMovieRepository)] as IUserMovieRepository;
         }
         public void BeginTransaction()
         {
@@ -89,7 +117,7 @@ namespace MyIMDB.DataAccess
 
         protected virtual void Dispose(bool disposing)
         {
-            if(!disposed)
+            if (!disposed)
                 if (disposing)
                     dbContext.Dispose();
             disposed = true;
@@ -98,6 +126,7 @@ namespace MyIMDB.DataAccess
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+
         }
     }
 }
