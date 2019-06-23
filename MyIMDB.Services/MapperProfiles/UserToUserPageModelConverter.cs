@@ -11,8 +11,10 @@ namespace MyIMDB.Services.MapperProfiles
     {
         public UserPageViewModel Convert(User source, UserPageViewModel destination, ResolutionContext context)
         {
-            destination = new UserPageViewModel();
-            destination.FullName = source.FullName;
+            destination = new UserPageViewModel
+            {
+                FullName = source.FullName
+            };
             var movies = context.Mapper.Map<IEnumerable<UserMovie>, IEnumerable<MovieListViewModel>>(source.Movies).ToList();
             destination.Rates = movies.Where(x => x.UsersRate != 0);
             destination.WatchLaterMovies = movies.Where(x => x.isInWatchlist);

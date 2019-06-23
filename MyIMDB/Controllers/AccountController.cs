@@ -1,17 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using MyIMDB.ApiModels.Models;
-using MyIMDB.Data.Entities;
-using MyIMDB.Services;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Authorization;
-using System.Threading.Tasks;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using MyIMDB.Web.Helpers;
+using MyIMDB.ApiModels.Models;
+using MyIMDB.Services;
 using MyIMDB.Services.Helpers;
+using MyIMDB.Web.Helpers;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 
 public class AuthenticationData
 {
@@ -20,7 +19,7 @@ public class AuthenticationData
 }
 namespace MyIMDB.Web.Controllers
 {
-    
+
     [ApiController]
     [Route("[controller]")]
     public class AccountController : ControllerBase
@@ -33,13 +32,13 @@ namespace MyIMDB.Web.Controllers
             service = _service;
             _appSettings = appSettings.Value;
         }
-        
+
         [HttpGet("registration-data")]
         public async Task<IActionResult> GetRegisterViewData()
         {
             return Ok(await service.GetRegistrationData());
         }
-        
+
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody]AuthenticationData data)
         {
@@ -70,7 +69,7 @@ namespace MyIMDB.Web.Controllers
                 token = tokenString,
             });
         }
-        
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody]RegisterModel model)
         {
@@ -86,14 +85,14 @@ namespace MyIMDB.Web.Controllers
 
             return Ok(await service.GetUserPageModel(userId));
         }
-        
+
         [HttpPost("restore-password")]
         public async Task<IActionResult> RestorePassword([FromBody]RestorePasswordApiModel model)
         {
             await service.RestorePassword(model.newPassword, model.passwordHash);
             return Ok();
         }
-        
+
         [HttpPost("restore-password-request")]
         public async Task<IActionResult> RestorePasswordRequest([FromForm]string email)
         {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MyIMDB.DataAccess
+﻿namespace MyIMDB.DataAccess
 {
     public static class Constants
     {

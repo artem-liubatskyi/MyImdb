@@ -22,6 +22,10 @@ namespace MyIMDB.Services.MapperProfiles
 
             CreateMap<User, UserPageViewModel>().ConvertUsing(new UserToUserPageModelConverter());
 
+            CreateMap<MoviePersonsMovies, MovieListViewModel>().ConvertUsing(new MoviePersonMovieToMovieListConverter());
+
+            CreateMap<MoviePerson, MoviePersonViewModel>().ConvertUsing(new MoviePersonToMoviePersonModelConverter());
+
             CreateMap<RegisterModel, User>();
 
             CreateMap<Gender, GenderModel>()

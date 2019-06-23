@@ -1,6 +1,4 @@
-﻿using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +12,8 @@ using MyIMDB.Services;
 using MyIMDB.Services.Configuration;
 using MyIMDB.Services.MapperProfiles;
 using MyIMDB.Web.Helpers;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace MyIMDB
 {
@@ -31,7 +31,7 @@ namespace MyIMDB
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
 
-            var appSettings =appSettingsSection.Get<AppSettings>();
+            var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
             services.AddAuthentication(x =>
             {
@@ -73,7 +73,7 @@ namespace MyIMDB
             services.RegisterServiceDependencies();
 
             ConfigureAuthentication(services);
-            
+
             services.AddDbContext<ImdbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -86,7 +86,7 @@ namespace MyIMDB
 
             services.AddMvc();
         }
-        
+
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())

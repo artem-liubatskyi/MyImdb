@@ -1,6 +1,5 @@
-﻿using System.Threading.Tasks;
-using MyIMDB.Data.Abstraction;
-using MyIMDB.Data.Entities;
+﻿using MyIMDB.Data.Entities;
+using System.Threading.Tasks;
 
 namespace MyIMDB.DataAccess.Interfaces
 {

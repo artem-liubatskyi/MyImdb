@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using MyIMDB.ApiModels.Models;
 using MyIMDB.Data.Entities;
-using System.Linq;
-using System.Collections.Generic;
-using AutoMapper;
 using MyIMDB.DataAccess.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MyIMDB.Services
 {
@@ -27,7 +27,7 @@ namespace MyIMDB.Services
             else
                 entity = await Uow.MovieRepository.GetFullWithUserMovies(id);
 
-            return entity;          
+            return entity;
         }
         public async Task<IEnumerable<Movie>> GetListBySearchQuery(string searchQuery, long? userId)
         {
@@ -80,14 +80,14 @@ namespace MyIMDB.Services
             var user = await Uow.UserRepository.GetWithMovies(userId);
 
             var rate = user.Movies.Where(x => x.MovieId == movieId).FirstOrDefault();
-            if (rate == null)
+            if (rate.Rate == null)
             {
                 var movie = await Uow.MovieRepository.Get(movieId);
                 if (movie == null)
                     return false;
                 else
                 {
-                    await Uow.UserMoviesRepository.Add(new UserMovie { UserId = userId, MovieId = movieId, IsInWatchlist = true});
+                    await Uow.UserMoviesRepository.Add(new UserMovie { UserId = userId, MovieId = movieId, IsInWatchlist = true });
                     await Uow.SaveChangesAsync();
                     return true;
                 }

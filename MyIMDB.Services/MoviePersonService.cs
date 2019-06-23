@@ -1,7 +1,6 @@
-﻿using MyIMDB.ApiModels.Models;
+﻿using MyIMDB.Data.Entities;
 using MyIMDB.DataAccess.Interfaces;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyIMDB.Services
@@ -14,33 +13,9 @@ namespace MyIMDB.Services
         {
             Uow = uow ?? throw new ArgumentNullException(nameof(uow));
         }
-        public async Task<MoviePersonViewModel> Get(long id)
+        public async Task<MoviePerson> Get(long id)
         {
-            var entity = await Uow.MoviePersonRepository.GetFull(id);
-
-            var movies = entity.MoviePersonsMovies.Select(x =>
-            new MovieListViewModel()
-            {
-                Id = x.MovieId,
-                Title = x.Movie.Title,
-                Year = x.Movie.Year,
-                ImageUrl = x.Movie.ImageUrl,
-                UsersRate = 0
-            }).ToArray();
-
-            var model = new MoviePersonViewModel()
-            {
-                Id = entity.Id,
-                FullName = entity.FullName,
-                DateOfBirth = entity.DateOfBirth.ToLongDateString(),
-                ImageUrl = entity.ImageUrl,
-                Biography = entity.Biography,
-                Gender = entity.Gender.Title,
-                Country = entity.Country.Name,
-                Movies = movies,
-            };
-
-            return model;
+            return await Uow.MoviePersonRepository.GetFull(id);
         }
     }
 }
