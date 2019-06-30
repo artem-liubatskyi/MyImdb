@@ -14,6 +14,8 @@ using MyIMDB.Services.MapperProfiles;
 using MyIMDB.Web.Helpers;
 using System.Text;
 using System.Threading.Tasks;
+using TmdbClient;
+using TmdbClient.Mapping;
 
 namespace MyIMDB
 {
@@ -72,6 +74,8 @@ namespace MyIMDB
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
             services.RegisterServiceDependencies();
 
+            services.AddTransient<ITmdbService, TmdbService>();
+
             ConfigureAuthentication(services);
 
             services.AddDbContext<ImdbContext>(options =>
@@ -80,6 +84,7 @@ namespace MyIMDB
             var mappingConfig = new MapperConfiguration(mc =>
             {
                 mc.AddProfile(new ServicesMapperProfile());
+                mc.AddProfile(new TmdbServiceMappingProfile());
             });
 
             services.AddSingleton(mappingConfig.CreateMapper());

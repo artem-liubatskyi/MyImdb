@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyIMDB.Data.Entities;
 using MyIMDB.DataAccess.Interfaces;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,6 +21,12 @@ namespace MyIMDB.DataAccess
                 .Include(x => x.MoviePersonsMovies)
                     .ThenInclude(x => x.Movie)
                 .FirstOrDefaultAsync();
+        }
+        public async Task<IEnumerable<MoviePerson>> GetBySearchQuery(string searchQuery)
+        {
+            return await DbContext.Set<MoviePerson>().Where(x => x.FullName.Contains(searchQuery))
+                .AsNoTracking()
+                .ToArrayAsync();
         }
     }
 }

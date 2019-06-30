@@ -6,8 +6,11 @@ using MyIMDB.Data.Entities;
 using MyIMDB.Services;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
+using TmdbClient;
 
 namespace MyIMDB.Web.Controllers
 {
@@ -17,11 +20,13 @@ namespace MyIMDB.Web.Controllers
     {
         private readonly IMovieService service;
         private readonly IMapper mapper;
+        private readonly ITmdbService tmdbService;
 
-        public MoviesController(IMovieService service, IMapper mapper)
+        public MoviesController(IMovieService service, IMapper mapper, ITmdbService tmdbService)
         {
             this.service = service ?? throw new ArgumentNullException(nameof(service));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            this.tmdbService = tmdbService ?? throw new ArgumentNullException(nameof(tmdbService));
         }
 
         [HttpGet("{id?}")]
@@ -34,8 +39,21 @@ namespace MyIMDB.Web.Controllers
         [HttpGet("search/{searchQuery?}")]
         public async Task<IActionResult> GetBySearchQuery(string searchQuery)
         {
+            if (searchQuery == null || searchQuery.Length <= 4)
+                return Ok();
+
             var userId = GetUserId();
+
             var entity = await service.GetListBySearchQuery(searchQuery, GetUserId());
+
+            if (!entity.Any())
+            {
+                await tmdbService.AddMovie(searchQuery);
+                entity = await service.GetListBySearchQuery(searchQuery, GetUserId());
+
+                if (!entity.Any())
+                    return Ok();
+            }
             return Ok(mapper.Map<IEnumerable<Movie>, MovieListViewModel[]>(entity, opt => opt.Items.Add("userId", userId)));
         }
         [HttpGet("top")]

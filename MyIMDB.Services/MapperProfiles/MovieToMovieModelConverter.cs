@@ -34,7 +34,10 @@ namespace MyIMDB.Services.MapperProfiles
 
                 AverageRate = source.RatesSum == 0 ? 0 : source.RatesSum / source.RatesCount,
 
-                Countries = source.MoviesCountries.Select(x => x.Country.Name)
+                Countries = source.MoviesCountries.Select(x => x.Country.Name),
+
+                Description = source.Description
+                
             };
             
 

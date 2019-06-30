@@ -11,6 +11,7 @@ namespace MyIMDB.DataAccess.Interfaces
         IMoviePersonRepository MoviePersonRepository { get; }
         IRepository<Gender> GenderRepository { get; }
         IRepository<Country> CountryRepository { get; }
+        IRepository<MoviePersonType> MoviePersonTypeRepository { get; }
 
         void BeginTransaction();
         void CommitTransaction();

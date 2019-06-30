@@ -13,14 +13,16 @@ namespace MyIMDB.Services.MapperProfiles
             {
                 Id = source.Id,
                 FullName = source.FullName,
-                DateOfBirth = source.DateOfBirth.ToLongDateString(),
                 ImageUrl = source.ImageUrl,
                 Biography = source.Biography,
-                Gender = source.Gender.Title,
-                Country = source.Country.Name,
                 Movies = context.Mapper.Map<IEnumerable<MoviePersonsMovies>, MovieListViewModel[]>(source.MoviePersonsMovies)
             };
-
+            if (source.Country != null)
+                destination.Country = source.Country.Name;
+            if (source.Gender != null)
+                destination.Gender = source.Gender.Title;
+            if (source.DateOfBirth != null)
+                destination.DateOfBirth = source.DateOfBirth.ToLongDateString();
             return destination;
         }
     }
