@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using MyIMDB.Data.Abstraction;
+﻿using MyIMDB.Data.Abstraction;
+using System.Collections.Generic;
 
 namespace MyIMDB.Data.Entities
 {
@@ -14,9 +14,9 @@ namespace MyIMDB.Data.Entities
         public string Description { get; set; }
 
         public virtual IEnumerable<MoviePersonsMovies> MoviePersonsMovies { get; set; }
-        
+
         public virtual IEnumerable<MoviesCountries> MoviesCountries { get; set; }
-        
+
         public virtual IEnumerable<MoviesGenres> Genres { get; set; }
 
         public virtual IEnumerable<UserMovie> UserMovies { get; set; }

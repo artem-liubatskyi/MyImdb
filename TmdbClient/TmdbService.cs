@@ -205,6 +205,7 @@ namespace TmdbClient
             }
             finally
             {
+
                 context.Database.CloseConnection();
             }
         }
