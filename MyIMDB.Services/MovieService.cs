@@ -110,7 +110,9 @@ namespace MyIMDB.Services
                 return false;
             else
                 rate.IsInWatchlist = false;
+
             await Uow.SaveChangesAsync();
+
             return true;
         }
     }

@@ -16,7 +16,7 @@ namespace MyIMDB.Services.MapperProfiles
                 FullName = source.FullName
             };
             var movies = context.Mapper.Map<IEnumerable<UserMovie>, IEnumerable<MovieListViewModel>>(source.Movies).ToList();
-            destination.Rates = movies.Where(x => x.UsersRate != 0);
+            destination.Rates = movies.Where(x => x.UsersRate != null);
             destination.WatchLaterMovies = movies.Where(x => x.isInWatchlist);
             return destination;
         }
