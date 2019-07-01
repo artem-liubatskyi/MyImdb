@@ -8,9 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TmdbClient;
 using TmdbClient.ApiModels;
 
-namespace TmdbClient
+namespace MyIMDB.Services
 {
     public class TmdbService : ITmdbService
     {
@@ -18,12 +19,13 @@ namespace TmdbClient
         private readonly IMapper mapper;
         private readonly ImdbContext context;
 
-        public TmdbService(IMapper mapper, ImdbContext context)
+        public TmdbService(ITmdbClient client, IMapper mapper, ImdbContext context)
         {
-            client = new TmdbClient();
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             this.context = context ?? throw new ArgumentNullException(nameof(context));
         }
+
         private string ParseCountryName(string placeOfBirth)
         {
 
@@ -34,7 +36,7 @@ namespace TmdbClient
                 countryName = $"{words[words.Count() - 2]} {words[words.Count() - 1]}";
             }
             if (countryName == "United States of America" || countryName == "U.S.A." || countryName == "NY"
-                || countryName == "US" || countryName == "America")
+                || countryName == "US" || countryName == "America" || countryName == "York")
                 countryName = "USA";
             if (countryName == "England" || countryName == "United Kingdom")
                 countryName = "UK";
@@ -84,7 +86,7 @@ namespace TmdbClient
             }
 
         }
-        private async Task AddNecessaryGenresAsync(List<ApiModels.Genre> genres)
+        private async Task AddNecessaryGenresAsync(List<TmdbClient.ApiModels.Genre> genres)
         {
             foreach (var genre in genres)
             {
@@ -145,7 +147,7 @@ namespace TmdbClient
             }
             await context.SaveChangesAsync();
         }
-        private async Task AddReferencesWithGenres(long movieId, List<ApiModels.Genre> genres)
+        private async Task AddReferencesWithGenres(long movieId, List<TmdbClient.ApiModels.Genre> genres)
         {
             foreach (var genre in genres)
             {
@@ -179,10 +181,11 @@ namespace TmdbClient
                 var credits = await GetMovieCredits(movie.Id);
 
                 var stars = await GetStars(credits);
-                var directors = await GetDirecters(credits);
-
                 await AddNecessaryCountriesAsync(stars);
+
+                var directors = await GetDirecters(credits);
                 await AddNecessaryCountriesAsync(directors);
+
                 await AddNecessaryCountriesAsync(movie.Production_countries);
                 await AddNecessaryGenresAsync(movie.Genres);
                 await AddNecessaryPersonsAsync(stars);
@@ -205,7 +208,6 @@ namespace TmdbClient
             }
             finally
             {
-
                 context.Database.CloseConnection();
             }
         }
@@ -216,14 +218,14 @@ namespace TmdbClient
             if (movieSearchResults != null && movieSearchResults.results.Any())
                 movie = await client.GetMovieByIdAsync(movieSearchResults.results.First().Id);
             if (movie != null && movie.Poster_path != null)
-                movie.Poster_path = Settings.GetImageUrl(movie.Poster_path);
+                movie.Poster_path = TmdbClient.Settings.GetImageUrl(movie.Poster_path);
             return movie;
         }
         public async Task<Person> GetPersonAsync(long personId)
         {
             var person = await client.GetPersonByIdAsync(personId);
             if (person != null && person.Profile_path != null)
-                person.Profile_path = Settings.GetImageUrl(person.Profile_path);
+                person.Profile_path =  TmdbClient.Settings.GetImageUrl(person.Profile_path);
             return person;
         }
         public async Task<Credits> GetMovieCredits(long movieId)
@@ -233,7 +235,7 @@ namespace TmdbClient
         public async Task<List<Person>> GetStars(Credits credits)
         {
             List<Person> stars = new List<Person>();
-            foreach (var star in credits.Cast)
+            foreach (var star in credits.Cast.Take(5))
             {
                 var person = await GetPersonAsync(star.Id);
 

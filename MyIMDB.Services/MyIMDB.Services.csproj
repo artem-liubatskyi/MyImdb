@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MyIMDB.ApiModels\MyIMDB.ApiModels.csproj" />
     <ProjectReference Include="..\MyIMDB.DataAccess\MyIMDB.DataAccess.csproj" />
+    <ProjectReference Include="..\TmdbClient\TmdbClient.csproj" />
   </ItemGroup>
 
   <ItemGroup>

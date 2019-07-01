@@ -75,6 +75,7 @@ namespace MyIMDB
             services.RegisterServiceDependencies();
 
             services.AddTransient<ITmdbService, TmdbService>();
+            services.AddSingleton<ITmdbClient, TmdbClient.TmdbClient>();
 
             ConfigureAuthentication(services);
 

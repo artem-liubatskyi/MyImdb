@@ -43,7 +43,6 @@
             return $"{ImagesHostUrl}{imagePath}";
             //https://image.tmdb.org/t/p/original/vfbfcqINRHzXNTenycHIjNO6Va7.jpg
         }
-
         public static string GetMovieCastUrl(long movieId)
         {
             return $"{HostUrl}movie/{movieId}/credits?api_key={ApiKey}";

@@ -10,7 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MyIMDB.DataAccess\MyIMDB.DataAccess.csproj" />
     <ProjectReference Include="..\MyIMDB.Data\MyIMDB.Data.csproj" />
   </ItemGroup>
 

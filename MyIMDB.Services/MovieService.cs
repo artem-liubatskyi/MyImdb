@@ -80,7 +80,8 @@ namespace MyIMDB.Services
             var user = await Uow.UserRepository.GetWithMovies(userId);
 
             var rate = user.Movies.Where(x => x.MovieId == movieId).FirstOrDefault();
-            if (rate.Rate == null)
+
+            if (rate == null)
             {
                 var movie = await Uow.MovieRepository.Get(movieId);
                 if (movie == null)
@@ -94,7 +95,9 @@ namespace MyIMDB.Services
             }
             else
                 rate.IsInWatchlist = true;
+
             await Uow.SaveChangesAsync();
+
             return true;
         }
         public async Task<bool> RemoveFromWatchlist(long movieId, long userId)
@@ -102,6 +105,7 @@ namespace MyIMDB.Services
             var user = await Uow.UserRepository.GetWithMovies(userId);
 
             var rate = user.Movies.Where(x => x.MovieId == movieId).FirstOrDefault();
+
             if (rate == null)
                 return false;
             else

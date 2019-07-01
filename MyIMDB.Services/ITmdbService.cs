@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using TmdbClient.ApiModels;
 
-namespace TmdbClient
+namespace MyIMDB.Services
 {
     public interface ITmdbService
     {
