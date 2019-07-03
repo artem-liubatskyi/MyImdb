@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using TmdbClient.ApiModels;
 
@@ -36,9 +37,17 @@ namespace TmdbClient
         {
             Person person = null;
             var response = await client.GetAsync(Settings.GetPersonByIdUrl(id));
+
             if (response.IsSuccessStatusCode)
-            {
                 person = await response.Content.ReadAsAsync<Person>();
+
+            while (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                Thread.Sleep(1000);
+                response = await client.GetAsync(Settings.GetPersonByIdUrl(id));
+
+                if (response.IsSuccessStatusCode)
+                    person = await response.Content.ReadAsAsync<Person>();
             }
             return person;
         }
@@ -51,6 +60,17 @@ namespace TmdbClient
                 credits = await response.Content.ReadAsAsync<Credits>();
             }
             return credits;
+        }
+
+        public async Task<VideoResults> GetVideosById(long movieId)
+        {
+            VideoResults videos = null;
+            var response = await client.GetAsync(Settings.GetMovieVideos(movieId));
+            if (response.IsSuccessStatusCode)
+            {
+                videos = await response.Content.ReadAsAsync<VideoResults>();
+            }
+            return videos;
         }
     }
 }

@@ -47,6 +47,10 @@
         {
             return $"{HostUrl}movie/{movieId}/credits?api_key={ApiKey}";
         }
+        public static string GetMovieVideos(long movieId)
+        {
+            return $"{HostUrl}movie/{movieId}/videos?api_key={ApiKey}";
+        }
 
     }
 }

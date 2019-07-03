@@ -7,6 +7,7 @@ using MyIMDB.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TmdbClient;
 using TmdbClient.ApiModels;
@@ -25,21 +26,27 @@ namespace MyIMDB.Services
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             this.context = context ?? throw new ArgumentNullException(nameof(context));
         }
-
         private string ParseCountryName(string placeOfBirth)
         {
-
             var countryName = placeOfBirth.Trim().Split(' ').Last();
+
             if (countryName.Contains("Republic") || countryName.Contains("Kingdom"))
             {
                 var words = placeOfBirth.Split(' ');
                 countryName = $"{words[words.Count() - 2]} {words[words.Count() - 1]}";
             }
+
             if (countryName == "United States of America" || countryName == "U.S.A." || countryName == "NY"
                 || countryName == "US" || countryName == "America" || countryName == "York")
-                countryName = "USA";
-            if (countryName == "England" || countryName == "United Kingdom")
-                countryName = "UK";
+                return "USA";
+
+            if (countryName == "England" || countryName == "United Kingdom" || countryName == "U.K.")
+                return "UK";
+
+            if (countryName == "Kong")
+                return "China";
+
+
             return countryName;
         }
         private async Task AddNecessaryPersonsAsync(List<Person> persons)
@@ -59,10 +66,12 @@ namespace MyIMDB.Services
                     var gender = context.Genders.FirstOrDefault(x => x.Id == person.Gender);
                     if (gender != null)
                         entity.GenderId = gender.Id;
+
                     await context.MoviePersons.AddAsync(entity);
+
+                    context.SaveChanges();
                 }
             }
-            context.SaveChanges();
         }
         private async Task AddNecessaryCountriesAsync(List<Person> persons)
         {
@@ -84,7 +93,6 @@ namespace MyIMDB.Services
                     context.SaveChanges();
                 }
             }
-
         }
         private async Task AddNecessaryGenresAsync(List<TmdbClient.ApiModels.Genre> genres)
         {
@@ -160,14 +168,23 @@ namespace MyIMDB.Services
             }
             await context.SaveChangesAsync();
         }
-        public async Task AddMovie(string title)
+        private async Task AddTrailer(long movieId, Movie entity)
+        {
+            var videos = await client.GetVideosById(movieId);
+            var trillerUri = videos.results.Where(x => x.type == "Trailer").FirstOrDefault().key;
+            entity.TrailerUrl = $"https://youtube.com/embed/{trillerUri}";
+        }
+        public async Task<string> AddMovie(string title)
         {
             var movie = await GetMovieAsync(title);
+
+            Movie movieEntity = null;
+
             if (movie == null)
-                return;
+                return null;
 
             IDbContextTransaction transaction = null;
-
+            
             try
             {
                 context.Database.OpenConnection();
@@ -176,20 +193,20 @@ namespace MyIMDB.Services
                 context.Movies.Add(mapper.Map<TmdbMovie, Movie>(movie));
                 context.SaveChanges();
 
-                var movieEntity = await context.Movies.FirstOrDefaultAsync(x => x.Title == movie.Original_title);
+                movieEntity = await context.Movies.FirstOrDefaultAsync(x => x.Title == movie.Original_title);
 
                 var credits = await GetMovieCredits(movie.Id);
-
+                await AddTrailer(movie.Id, movieEntity);
                 var stars = await GetStars(credits);
                 await AddNecessaryCountriesAsync(stars);
+                await AddNecessaryPersonsAsync(stars);
 
                 var directors = await GetDirecters(credits);
                 await AddNecessaryCountriesAsync(directors);
+                await AddNecessaryPersonsAsync(directors);
 
                 await AddNecessaryCountriesAsync(movie.Production_countries);
                 await AddNecessaryGenresAsync(movie.Genres);
-                await AddNecessaryPersonsAsync(stars);
-                await AddNecessaryPersonsAsync(directors);
 
                 var starType = await context.MoviePersonsType.FirstOrDefaultAsync(x => x.Type == Constants.StarType);
                 var directorType = await context.MoviePersonsType.FirstOrDefaultAsync(x => x.Type == Constants.DirectorType);
@@ -199,6 +216,12 @@ namespace MyIMDB.Services
 
                 await AddReferencesWithCountries(movieEntity.Id, movie.Production_countries);
                 await AddReferencesWithGenres(movieEntity.Id, movie.Genres);
+
+                if (context.MoviePersonsMovies.Where(x => x.MovieId == movieEntity.Id
+                    && x.MoviePersonTypeId == directorType.Id).Count() < 1
+                || context.MoviePersonsMovies.Where(x => x.MovieId == movieEntity.Id
+                    && x.MoviePersonTypeId == starType.Id).Count() < 3)
+                    throw new Exception("Data consistent is broken");
 
                 transaction.Commit();
             }
@@ -210,6 +233,7 @@ namespace MyIMDB.Services
             {
                 context.Database.CloseConnection();
             }
+            return movie.Title;
         }
         public async Task<TmdbMovie> GetMovieAsync(string title)
         {
@@ -224,8 +248,9 @@ namespace MyIMDB.Services
         public async Task<Person> GetPersonAsync(long personId)
         {
             var person = await client.GetPersonByIdAsync(personId);
+
             if (person != null && person.Profile_path != null)
-                person.Profile_path =  TmdbClient.Settings.GetImageUrl(person.Profile_path);
+                person.Profile_path = TmdbClient.Settings.GetImageUrl(person.Profile_path);
             return person;
         }
         public async Task<Credits> GetMovieCredits(long movieId)
@@ -235,7 +260,7 @@ namespace MyIMDB.Services
         public async Task<List<Person>> GetStars(Credits credits)
         {
             List<Person> stars = new List<Person>();
-            foreach (var star in credits.Cast.Take(5))
+            foreach (var star in credits.Cast)
             {
                 var person = await GetPersonAsync(star.Id);
 

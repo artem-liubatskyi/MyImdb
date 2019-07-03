@@ -9,6 +9,9 @@ namespace MyIMDB.ApiModels.Models
         public int Year { get; set; }
         public string ImageUrl { get; set; }
         public string Description { get; set; }
+        public string TrailerUrl { get; set; }
+        public long Runtime { get; set; }
+        public long Budget { get; set; }
         public double AverageRate { get; set; }
         public int? UsersRate { get; set; }
         public IEnumerable<string> Genres { get; set; }

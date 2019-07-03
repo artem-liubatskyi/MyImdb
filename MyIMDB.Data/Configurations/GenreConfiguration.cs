@@ -10,6 +10,7 @@ namespace MyIMDB.Data.Configurations
         public override void ConfigureSpecific(EntityTypeBuilder<Genre> builder)
         {
             builder.ToTable("Genre");
+            builder.HasIndex(x => x.Title).IsUnique();
         }
     }
 }

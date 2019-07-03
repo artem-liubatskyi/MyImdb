@@ -8,7 +8,9 @@ namespace MyIMDB.Data.Entities
         public long Id { get; set; }
         public string Title { get; set; }
         public int Year { get; set; }
-
+        public long Runtime { get; set; }
+        public long Budget { get; set; }
+        public string TrailerUrl { get; set; }
         public string ImageUrl { get; set; }
 
         public string Description { get; set; }

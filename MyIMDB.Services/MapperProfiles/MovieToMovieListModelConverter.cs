@@ -9,6 +9,9 @@ namespace MyIMDB.Services.MapperProfiles
     {
         public MovieListViewModel Convert(Movie source, MovieListViewModel destination, ResolutionContext context)
         {
+            if (source == null)
+                return null;
+
             destination = new MovieListViewModel
             {
                 Id = source.Id,
@@ -24,7 +27,11 @@ namespace MyIMDB.Services.MapperProfiles
             if (userId == null)
                 return destination;
 
+            if (source.UserMovies == null || !source.UserMovies.Any())
+                return destination;
+
             var userRate = source.UserMovies.Where(x => x.UserId == (long)userId).FirstOrDefault();
+
             if (userRate == null)
             {
                 destination.UsersRate = 0;

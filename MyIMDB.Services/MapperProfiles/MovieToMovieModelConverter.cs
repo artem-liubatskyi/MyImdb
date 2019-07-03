@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using AutoMapper;
+﻿using AutoMapper;
 using MyIMDB.ApiModels.Models;
 using MyIMDB.Data.Entities;
 using MyIMDB.DataAccess;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MyIMDB.Services.MapperProfiles
 {
@@ -24,6 +24,12 @@ namespace MyIMDB.Services.MapperProfiles
 
                 ImageUrl = source.ImageUrl,
 
+                TrailerUrl = source.TrailerUrl,
+
+                Runtime = source.Runtime,
+
+                Budget = source.Budget,
+
                 Genres = source.Genres.Select(x => x.Genre).Select(x => x.Title).ToArray(),
 
                 Directors = context.Mapper.Map<IEnumerable<MoviePersonsMovies>, IEnumerable<MoviePersonListViewModel>>
@@ -37,9 +43,9 @@ namespace MyIMDB.Services.MapperProfiles
                 Countries = source.MoviesCountries.Select(x => x.Country.Name),
 
                 Description = source.Description
-                
+
             };
-            
+
 
             context.Items.TryGetValue("userId", out object userId);
 

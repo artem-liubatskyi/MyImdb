@@ -9,5 +9,6 @@ namespace TmdbClient
         Task<Credits> GetCreditsAsync(long movieId);
         Task<TmdbMovie> GetMovieByIdAsync(long movieId);
         Task<Person> GetPersonByIdAsync(long personId);
+        Task<VideoResults> GetVideosById(long movieId);
     }
 }

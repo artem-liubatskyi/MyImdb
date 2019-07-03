@@ -12,6 +12,7 @@ namespace MyIMDB.Data.Configurations
         public override void ConfigureSpecific(EntityTypeBuilder<Country> builder)
         {
             builder.ToTable("Country");
+            builder.HasIndex(x => x.Name).IsUnique();
         }
     }
 }

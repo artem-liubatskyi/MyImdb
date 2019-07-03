@@ -15,6 +15,8 @@ namespace TmdbClient.Mapping
                 Year = System.Convert.ToInt32(date[0]),
                 ImageUrl = source.Poster_path,
                 Description = source.Overview,
+                Budget = source.Budget,
+                Runtime = source.Runtime
             };
             return destination;
         }

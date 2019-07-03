@@ -8,9 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
-using TmdbClient;
 
 namespace MyIMDB.Web.Controllers
 {
@@ -39,7 +37,7 @@ namespace MyIMDB.Web.Controllers
         [HttpGet("search/{searchQuery?}")]
         public async Task<IActionResult> GetBySearchQuery(string searchQuery)
         {
-            if (searchQuery == null || searchQuery.Length <= 4)
+            if (searchQuery == null || searchQuery.Length <= 3)
                 return Ok();
 
             var userId = GetUserId();
@@ -48,11 +46,10 @@ namespace MyIMDB.Web.Controllers
 
             if (!entity.Any())
             {
-                await tmdbService.AddMovie(searchQuery);
-                entity = await service.GetListBySearchQuery(searchQuery, GetUserId());
+                var title = await tmdbService.AddMovie(searchQuery);
+                entity = await service.GetListBySearchQuery(title, userId);
 
-                if (!entity.Any())
-                    return Ok();
+                return Ok(mapper.Map<IEnumerable<Movie>, MovieListViewModel[]>(entity, opt => opt.Items.Add("userId", userId)));
             }
             return Ok(mapper.Map<IEnumerable<Movie>, MovieListViewModel[]>(entity, opt => opt.Items.Add("userId", userId)));
         }

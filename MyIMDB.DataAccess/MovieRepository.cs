@@ -22,10 +22,18 @@ namespace MyIMDB.DataAccess
 
         public async Task<IEnumerable<Movie>> GetBySearchQueryWithUserMovies(string searchQuery)
         {
-            return await DbContext.Set<Movie>().Where(x => x.Title.Contains(searchQuery))
+            var contains = await DbContext.Set<Movie>().Where(x => x.Title.Contains(searchQuery))
                 .Include(movie => movie.UserMovies)
                 .AsNoTracking()
-                .ToArrayAsync();
+                .ToListAsync();
+
+            var equal = contains.FirstOrDefault(x => x.Title == searchQuery);
+
+            contains.Remove(equal);
+
+            contains.Prepend(equal);
+
+            return contains;
         }
 
         public async Task<Movie> GetFull(long id)
