@@ -21,6 +21,7 @@ namespace MyIMDB.DataAccess
         private IRepository<Gender> genderRepository;
         private IRepository<Country> countryRepository;
         private IRepository<MoviePersonType> moviePersonTypeRepository;
+        private IRepository<Role> rolesRepository;
 
 
         public IUserMovieRepository UserMoviesRepository
@@ -84,6 +85,15 @@ namespace MyIMDB.DataAccess
                 if (moviePersonTypeRepository == null)
                     moviePersonTypeRepository = new Repository<MoviePersonType>(dbContext);
                 return moviePersonTypeRepository;
+            }
+        }
+        public IRepository<Role> RolesRepository
+        {
+            get
+            {
+                if (rolesRepository == null)
+                    rolesRepository = new Repository<Role>(dbContext);
+                return rolesRepository;
             }
         }
         public UnitOfWork(ImdbContext dbContext)

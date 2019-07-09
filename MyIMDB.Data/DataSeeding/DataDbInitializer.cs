@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MyIMDB.Data.Entities;
+using System;
 using System.Linq;
-using MyIMDB.Data.Entities;
 
 namespace MyIMDB.Data.DataSeeding
 {
@@ -45,6 +45,11 @@ namespace MyIMDB.Data.DataSeeding
                     new MoviePersonType() { Type = "Star"},
                     new MoviePersonType() { Type = "Director"}
                 };
+        private static readonly Role[] roles =
+        {
+            new Role{ Name="User"},
+            new Role { Name = "Admin"}
+        };
         private static readonly Movie[] movies = new[]
                 {
                     new Movie(){
@@ -64,8 +69,11 @@ namespace MyIMDB.Data.DataSeeding
                     }
                 };
 
-    public static void Seed(ImdbContext context)
+        public static void Seed(ImdbContext context)
         {
+            if (!context.Roles.Any())
+                context.Roles.AddRange(roles);
+
             var france = countries.FirstOrDefault(x => x.Name == "France");
             var usa = countries.FirstOrDefault(x => x.Name == "USA");
 
@@ -93,7 +101,7 @@ namespace MyIMDB.Data.DataSeeding
 
             if (!context.Movies.Any())
                 context.Movies.AddRange(movies);
-            
+
             if (!context.MoviePersons.Any())
             {
                 var persons = new[]
@@ -161,10 +169,10 @@ namespace MyIMDB.Data.DataSeeding
                 };
                 context.MoviePersons.AddRange(persons);
                 context.SaveChanges();
-            }        
+            }
             if (!context.MoviePersonsMovies.Any())
             {
-                var freeman = context.MoviePersons.FirstOrDefault(x=>x.FullName== "Morgan Freeman");
+                var freeman = context.MoviePersons.FirstOrDefault(x => x.FullName == "Morgan Freeman");
                 var darabont = context.MoviePersons.FirstOrDefault(x => x.FullName == "Frank Darabont");
                 var robins = context.MoviePersons.FirstOrDefault(x => x.FullName == "Tim Robbins");
 
@@ -210,7 +218,7 @@ namespace MyIMDB.Data.DataSeeding
             }
             if (!context.MoviesGenres.Any())
             {
-                var drama = context.Genres.FirstOrDefault(x=>x.Title=="Drama");
+                var drama = context.Genres.FirstOrDefault(x => x.Title == "Drama");
                 var crime = context.Genres.FirstOrDefault(x => x.Title == "Crime");
                 var fantasy = context.Genres.FirstOrDefault(x => x.Title == "Fantasy");
                 var mg = new[]

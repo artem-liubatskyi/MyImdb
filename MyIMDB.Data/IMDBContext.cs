@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MyIMDB.Data.Configurations;
 using MyIMDB.Data.Entities;
 
@@ -7,10 +6,11 @@ namespace MyIMDB.Data
 {
     public class ImdbContext : DbContext
     {
-        public ImdbContext(DbContextOptions options) 
+        public ImdbContext(DbContextOptions options)
             : base(options)
         {
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new MoviesCountriesConfiguration())
@@ -23,12 +23,15 @@ namespace MyIMDB.Data
                         .ApplyConfiguration(new MoviePersonsMoviesConfiguration())
                         .ApplyConfiguration(new MoviePersonTypeConfiguration())
                         .ApplyConfiguration(new UserMoviesConfiguration())
-                        .ApplyConfiguration(new UserConfiguration());
+                        .ApplyConfiguration(new UserConfiguration())
+                        .ApplyConfiguration(new RefrestTokenConfuguration());
 
             base.OnModelCreating(modelBuilder);
 
         }
         public DbSet<User> Users { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
         public DbSet<Movie> Movies { get; set; }
         public DbSet<MoviePerson> MoviePersons { get; set; }
@@ -42,6 +45,6 @@ namespace MyIMDB.Data
         public DbSet<MoviesGenres> MoviesGenres { get; set; }
         public DbSet<MoviesCountries> MoviesCountries { get; set; }
         public DbSet<MoviePersonsMovies> MoviePersonsMovies { get; set; }
-        
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using MyIMDB.ApiModels.Models;
@@ -18,5 +19,7 @@ namespace MyIMDB.Services
         Task<UserPageViewModel> GetUserPageModel(long userId);
         Task ForgotPassword(string email, NotificationServiceType type);
         Task RestorePassword(string newPassword, string hash);
+        Task SetRefreshToken(User user, RefreshToken token);
+        ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
     }
 }

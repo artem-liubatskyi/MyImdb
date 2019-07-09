@@ -43,7 +43,7 @@ namespace TmdbClient
 
             while (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(100);
                 response = await client.GetAsync(Settings.GetPersonByIdUrl(id));
 
                 if (response.IsSuccessStatusCode)
@@ -61,7 +61,6 @@ namespace TmdbClient
             }
             return credits;
         }
-
         public async Task<VideoResults> GetVideosById(long movieId)
         {
             VideoResults videos = null;

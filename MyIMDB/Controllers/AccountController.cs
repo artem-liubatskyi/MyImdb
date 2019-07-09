@@ -5,13 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using MyIMDB.ApiModels.Models;
 using MyIMDB.Services;
 using MyIMDB.Services.Helpers;
-using MyIMDB.Web.Helpers;
 using System;
-using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
-
 public class AuthenticationData
 {
     public string login { get; set; }
@@ -25,12 +22,14 @@ namespace MyIMDB.Web.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService service;
-        private readonly AppSettings _appSettings;
+        private readonly IJwtFactory jwtFactory;
+        private readonly JwtIssuerOptions options;
 
-        public AccountController(IAccountService _service, IOptions<AppSettings> appSettings)
+        public AccountController(IAccountService service, IJwtFactory jwtFactory, IOptions<JwtIssuerOptions> options)
         {
-            service = _service;
-            _appSettings = appSettings.Value;
+            this.service = service ?? throw new ArgumentNullException(nameof(service));
+            this.jwtFactory = jwtFactory ?? throw new ArgumentNullException(nameof(jwtFactory));
+            this.options = options.Value ?? throw new ArgumentNullException(nameof(options));
         }
 
         [HttpGet("registration-data")]
@@ -47,26 +46,28 @@ namespace MyIMDB.Web.Controllers
             if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, user.Id.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
+            var tokenString = await jwtFactory.GenerateEncodedToken(user);
 
+            if (user.Token == null || !user.Token.Active)
+            {
+                var refreshToken = jwtFactory.GenerateRefreshToken(user.Id, "");
+                await service.SetRefreshToken(user, refreshToken);
+                return Ok(new
+                {
+                    id = user.Id,
+                    userName = user.UserName,
+                    fullName = user.FullName,
+                    accessToken = tokenString,
+                    refreshToken = refreshToken
+                });
+            }
             return Ok(new
             {
                 id = user.Id,
-                login = user.Login,
+                userName = user.UserName,
                 fullName = user.FullName,
-                token = tokenString,
+                accessToken = tokenString,
+                refreshToken = user.Token.Token
             });
         }
 
@@ -99,5 +100,37 @@ namespace MyIMDB.Web.Controllers
             await service.ForgotPassword(email, NotificationServiceType.Email);
             return Ok();
         }
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody]RefreshTokenModel model)
+        {
+            var principal = service.GetPrincipalFromExpiredToken(model.Token);
+
+            var userId = Convert.ToInt64(principal.Claims.First(x => x.Type == ClaimTypes.Name).Value);
+
+            var user = await service.Get(userId);
+
+            if (user.Token == null)
+                throw new NullReferenceException($"No tokek for {user.FullName}");
+
+            if (user.Token.Token != model.RefreshToken)
+                throw new SecurityTokenException("Invalid refresh token");
+
+            var newJwtToken =
+                await jwtFactory.GenerateEncodedToken(user);
+
+            var newRefreshToken = jwtFactory.GenerateRefreshToken(userId, "");
+
+            await service.SetRefreshToken(user, newRefreshToken);
+
+            return Ok(new
+            {
+                id = user.Id,
+                userName = user.UserName,
+                fullName = user.FullName,
+                accessToken = newJwtToken,
+                refreshToken = newRefreshToken.Token
+            });
+        }
+
     }
 }

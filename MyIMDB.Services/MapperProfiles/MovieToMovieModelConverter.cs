@@ -2,6 +2,7 @@
 using MyIMDB.ApiModels.Models;
 using MyIMDB.Data.Entities;
 using MyIMDB.DataAccess;
+using MyIMDB.Services.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,9 +27,9 @@ namespace MyIMDB.Services.MapperProfiles
 
                 TrailerUrl = source.TrailerUrl,
 
-                Runtime = source.Runtime,
+                Runtime = MappingStringParser.ParseRuntime(source.Runtime),
 
-                Budget = source.Budget,
+                Budget = MappingStringParser.ParseBudget(source.Budget),
 
                 Genres = source.Genres.Select(x => x.Genre).Select(x => x.Title).ToArray(),
 

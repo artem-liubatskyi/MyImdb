@@ -11,15 +11,27 @@ namespace MyIMDB.DataAccess
         public UserRepository(DbContext dbContext) : base(dbContext)
         {
         }
-
+        public async Task<User> GetById(long id)
+        {
+            return await DbContext.Set<User>()
+                .Include(x => x.Token)
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
         public async Task<User> GetByEmail(string email)
         {
-            return await DbContext.Set<User>().FirstOrDefaultAsync(x => x.EMail == email);
+            return await DbContext.Set<User>()
+                .Include(x => x.Token)
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Email == email);
         }
 
         public async Task<User> GetByUsername(string username)
         {
-            return await DbContext.Set<User>().FirstOrDefaultAsync(x => x.Login == username);
+            return await DbContext.Set<User>()
+                .Include(x => x.Token)
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.UserName == username);
         }
 
         public async Task<User> GetForUserPage(long id)

@@ -1,12 +1,18 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MyIMDB.ApiModels.Models;
 using MyIMDB.Data.Entities;
+using MyIMDB.DataAccess;
 using MyIMDB.DataAccess.Interfaces;
 using MyIMDB.Services.Hashing;
 using MyIMDB.Services.Helpers;
 using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MyIMDB.Services
@@ -17,13 +23,15 @@ namespace MyIMDB.Services
         private readonly IHasher Hasher;
         private readonly IHttpContextAccessor httpAccessor;
         private readonly IMapper mapper;
+        private readonly JwtIssuerOptions options;
 
-        public AccountService(IUnitOfWork uow, IHasher hasher, IHttpContextAccessor httpAccessor, IMapper mapper)
+        public AccountService(IUnitOfWork uow, IHasher hasher, IHttpContextAccessor httpAccessor, IMapper mapper, IOptions<JwtIssuerOptions> options)
         {
             Uow = uow ?? throw new ArgumentNullException(nameof(uow));
             Hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
             this.httpAccessor = httpAccessor ?? throw new ArgumentNullException(nameof(httpAccessor));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            this.options = options.Value ?? throw new ArgumentNullException(nameof(options));
         }
 
         public async Task<User> Authenticate(string username, string password)
@@ -46,13 +54,15 @@ namespace MyIMDB.Services
             if (string.IsNullOrWhiteSpace(model.Password))
                 throw new Exception("Password is required");
 
-            if (await Uow.UserRepository.GetByUsername(model.Login) != null)
-                throw new Exception("Username \"" + model.Login + "\" is already taken");
+            if (await Uow.UserRepository.GetByUsername(model.UserName) != null)
+                throw new Exception("Username \"" + model.UserName + "\" is already taken");
 
             if (await Uow.UserRepository.GetByEmail(model.Email) != null)
                 throw new Exception("Email \"" + model.Email + "\" is already taken");
 
             var user = mapper.Map<RegisterModel, User>(model);
+
+            user.RoleId = Uow.RolesRepository.GetQueryable().FirstOrDefault(x => x.Name == Constants.UserRole).Id;
 
             PasswordHash ph = await Hasher.CreatePasswordHash(model.Password);
 
@@ -71,15 +81,15 @@ namespace MyIMDB.Services
             if (user == null)
                 throw new Exception("User not found");
 
-            if (userParam.Login != user.Login)
+            if (userParam.UserName != user.UserName)
             {
-                if (await Uow.UserRepository.GetByUsername(userParam.Login) != null)
-                    throw new Exception("Username " + userParam.Login + " is already taken");
+                if (await Uow.UserRepository.GetByUsername(userParam.UserName) != null)
+                    throw new Exception("Username " + userParam.UserName + " is already taken");
             }
-            if (userParam.EMail != user.EMail)
+            if (userParam.Email != user.Email)
             {
-                if (await Uow.UserRepository.GetByEmail(userParam.EMail) != null)
-                    throw new Exception("eMail " + userParam.EMail + " is already taken");
+                if (await Uow.UserRepository.GetByEmail(userParam.Email) != null)
+                    throw new Exception("eMail " + userParam.Email + " is already taken");
             }
 
             if (!string.IsNullOrWhiteSpace(password))
@@ -94,7 +104,7 @@ namespace MyIMDB.Services
         }
         public async Task<User> Get(long id)
         {
-            return await Uow.UserRepository.Get(id);
+            return await Uow.UserRepository.GetById(id);
         }
         public async Task<RegisterDataModel> GetRegistrationData()
         {
@@ -152,6 +162,36 @@ namespace MyIMDB.Services
                 default:
                     throw new ArgumentException();
             }
+        }
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = options.SigningCredentials.Key,
+                ValidateLifetime = false
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            SecurityToken securityToken;
+
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
+
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+
+            if (jwtSecurityToken == null
+                || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                throw new SecurityTokenException("Invalid token");
+
+            return principal;
+        }
+        public async Task SetRefreshToken(User user, RefreshToken token)
+        {
+            user.Token = token;
+            await Uow.SaveChangesAsync();
         }
     }
 }
