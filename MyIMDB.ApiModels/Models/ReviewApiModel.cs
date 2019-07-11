@@ -1,20 +1,19 @@
-﻿using MyIMDB.Data.Abstraction;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
-namespace MyIMDB.Data.Entities
+namespace MyIMDB.ApiModels.Models
 {
-    public class Review : IEntity
+    public class ReviewApiModel
     {
         public long Id { get; set; }
         public long UserId { get; set; }
-        public User User { get; set; }
+        public string UserName { get; set; }
         public long MovieId { get; set; }
-        public Movie Movie { get; set; }
         public string Text { get; set; }
-        public DateTime Added { get; set; }
+        public string Added { get; set; }
         public int LikesCount { get; set; }
         public int DislikesCount { get; set; }
-        public virtual IEnumerable<Like> Likes { get; set; }
+        public bool? LikedByCurrentUser { get; set; }
     }
 }

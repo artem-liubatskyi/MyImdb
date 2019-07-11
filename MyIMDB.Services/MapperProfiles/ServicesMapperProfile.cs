@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MyIMDB.ApiModels.Models;
 using MyIMDB.Data.Entities;
+using System;
 
 namespace MyIMDB.Services.MapperProfiles
 {
@@ -12,7 +13,8 @@ namespace MyIMDB.Services.MapperProfiles
                 .ForMember(x => x.Id, opt => opt.MapFrom(source => source.MoviePersonId))
                 .ForMember(x => x.Year, opt => opt.MapFrom(source => source.Person.DateOfBirth.Year))
                 .ForMember(x => x.FullName, opt => opt.MapFrom(source => source.Person.FullName))
-                .ForMember(x => x.ImageUrl, opt => opt.MapFrom(source => source.Person.ImageUrl));
+                .ForMember(x => x.ImageUrl, opt => opt.MapFrom(source => source.Person.ImageUrl))
+                .ForMember(x=>x.Character, opt=>opt.MapFrom(source=>source.Character));
 
             CreateMap<Movie, MovieViewModel>().ConvertUsing(new MovieToMovieModelConverter());
 
@@ -35,6 +37,11 @@ namespace MyIMDB.Services.MapperProfiles
             CreateMap<Country, CountryModel>()
                 .ForMember(x => x.Id, opt => opt.MapFrom(source => source.Id))
                 .ForMember(x => x.Name, opt => opt.MapFrom(source => source.Name));
+
+            CreateMap<Review, ReviewApiModel>().ConvertUsing(new ReviewToReviewApiConverter());
+
+            CreateMap<ReviewApiModel, Review>()
+                .ForMember(x => x.Added, opt => opt.MapFrom(source => DateTime.Now));
         }
     }
 }

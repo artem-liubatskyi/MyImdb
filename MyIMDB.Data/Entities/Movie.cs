@@ -20,6 +20,7 @@ namespace MyIMDB.Data.Entities
         public virtual IEnumerable<MoviesCountries> MoviesCountries { get; set; }
 
         public virtual IEnumerable<MoviesGenres> Genres { get; set; }
+        public virtual IEnumerable<Review> Reviews { get; set; }
 
         public virtual IEnumerable<UserMovie> UserMovies { get; set; }
 

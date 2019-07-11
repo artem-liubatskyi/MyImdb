@@ -13,5 +13,6 @@ namespace MyIMDB.Services
         Task<bool> AddToWatchlist(long movieId, long userId);
         Task<bool> RemoveFromWatchlist(long movieId, long userId);
         Task<IEnumerable<Movie>> GetTop(long? userId, int topSize=250);
+        Task AddReview(Review review);
     }
 }

@@ -11,7 +11,7 @@ namespace TmdbClient.Mapping
             var date = source.Release_date.Split('-');
             destination = new Movie
             {
-                Title = source.Original_title,
+                Title = source.Title,
                 Year = System.Convert.ToInt32(date[0]),
                 ImageUrl = source.Poster_path,
                 Description = source.Overview,

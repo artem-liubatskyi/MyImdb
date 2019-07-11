@@ -10,5 +10,7 @@
 
         public long MoviePersonTypeId { get; set; }
         public virtual MoviePersonType MoviePersonType { get; set; }
+
+        public string Character { get; set; }
     }
 }

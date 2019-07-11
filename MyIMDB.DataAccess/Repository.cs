@@ -17,8 +17,8 @@ namespace MyIMDB.DataAccess
         }
         public async Task<TEntity> Add(TEntity entity)
         {
-            await DbContext.AddAsync(entity);
-            return entity;
+            var addedEntity = await DbContext.AddAsync(entity);
+            return addedEntity.Entity;
         }
         public async Task<IEnumerable<TEntity>> Add(IReadOnlyCollection<TEntity> entities)
         {

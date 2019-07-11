@@ -109,6 +109,9 @@ namespace MyIMDB.Web.Controllers
 
             var user = await service.Get(userId);
 
+            if(user==null)
+                throw new NullReferenceException($"No user for your token");
+
             if (user.Token == null)
                 throw new NullReferenceException($"No tokek for {user.FullName}");
 

@@ -13,7 +13,8 @@ namespace MyIMDB.DataAccess.Interfaces
         IRepository<Country> CountryRepository { get; }
         IRepository<MoviePersonType> MoviePersonTypeRepository { get; }
         IRepository<Role> RolesRepository { get; }
-
+        IRepository<RefreshToken> TokenRepository { get; }
+        IReviewRepository ReviewRepository { get; }
         void BeginTransaction();
         void CommitTransaction();
         void RollbackTransaction();

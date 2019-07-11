@@ -24,7 +24,9 @@ namespace MyIMDB.Data
                         .ApplyConfiguration(new MoviePersonTypeConfiguration())
                         .ApplyConfiguration(new UserMoviesConfiguration())
                         .ApplyConfiguration(new UserConfiguration())
-                        .ApplyConfiguration(new RefrestTokenConfuguration());
+                        .ApplyConfiguration(new RefrestTokenConfuguration())
+                        .ApplyConfiguration(new ReviewConfiguration())
+                        .ApplyConfiguration(new LikeConfiguration());
 
             base.OnModelCreating(modelBuilder);
 
@@ -32,7 +34,8 @@ namespace MyIMDB.Data
         public DbSet<User> Users { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Role> Roles { get; set; }
-
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<Like> Likes { get; set; }
         public DbSet<Movie> Movies { get; set; }
         public DbSet<MoviePerson> MoviePersons { get; set; }
 

@@ -47,6 +47,8 @@ namespace MyIMDB.DataAccess
                     .ThenInclude(x => x.Person)
                         .ThenInclude(x => x.MoviePersonsMovies)
                             .ThenInclude(x => x.MoviePersonType)
+                .Include(x=>x.Reviews)
+                    .ThenInclude(x=>x.User)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
         }
@@ -55,13 +57,16 @@ namespace MyIMDB.DataAccess
             return await DbContext.Set<Movie>().Where(x => x.Id == id)
                 .Include(x => x.MoviesCountries)
                     .ThenInclude(x => x.Country)
-                .Include(x => x.UserMovies)
+                .Include(x => x.UserMovies)//*
                 .Include(x => x.Genres)
                     .ThenInclude(x => x.Genre)
                 .Include(x => x.MoviePersonsMovies)
                     .ThenInclude(x => x.Person)
                         .ThenInclude(x => x.MoviePersonsMovies)
                             .ThenInclude(x => x.MoviePersonType)
+                .Include(x => x.Reviews)
+                    .ThenInclude(x => x.User)
+                        .ThenInclude(x=>x.Likes)//*
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
         }

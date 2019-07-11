@@ -9,12 +9,13 @@ namespace MyIMDB.Services.Configuration
     {
         public static void RegisterServiceDependencies(this IServiceCollection collection)
         {
+            collection.RegisterDataAccessDependencies();
             collection.AddTransient<IAccountService, AccountService>();
             collection.AddTransient<IJwtFactory, JwtFactory>();
             collection.AddTransient<IHasher, Hasher>();
             collection.AddTransient<IMovieService, MovieService>();
             collection.AddTransient<IMoviePersonService, MoviePersonService>();
-            collection.RegisterDataAccessDependencies();
+            collection.AddTransient<ISeedService, SeedService>();
         }
     }
 }

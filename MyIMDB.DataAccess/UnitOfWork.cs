@@ -22,7 +22,8 @@ namespace MyIMDB.DataAccess
         private IRepository<Country> countryRepository;
         private IRepository<MoviePersonType> moviePersonTypeRepository;
         private IRepository<Role> rolesRepository;
-
+        private IRepository<RefreshToken> tokenRepository;
+        private IReviewRepository reviewRepository;
 
         public IUserMovieRepository UserMoviesRepository
         {
@@ -96,6 +97,26 @@ namespace MyIMDB.DataAccess
                 return rolesRepository;
             }
         }
+        public IRepository<RefreshToken> TokenRepository
+        {
+            get
+            {
+                if (tokenRepository == null)
+                    tokenRepository = new Repository<RefreshToken>(dbContext);
+                return tokenRepository;
+            }
+        }
+
+        public IReviewRepository ReviewRepository
+        {
+            get
+            {
+                if (reviewRepository == null)
+                    reviewRepository = new ReviewRepository(dbContext);
+                return reviewRepository;
+            }
+        }
+
         public UnitOfWork(ImdbContext dbContext)
         {
             this.dbContext = dbContext;

@@ -17,6 +17,7 @@ using MyIMDB.Services.MapperProfiles;
 using MyIMDB.Web.Helpers;
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using TmdbClient;
 using TmdbClient.Mapping;
 
@@ -25,7 +26,6 @@ namespace MyIMDB
     public class Startup
     {
         public IConfiguration Configuration { get; }
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -87,10 +87,10 @@ namespace MyIMDB
         {
             services.AddCors();
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<ITmdbClient, TmdbClient.TmdbClient>();
+            services.AddTransient<ITmdbService, TmdbService>();
             services.RegisterServiceDependencies();
 
-            services.AddTransient<ITmdbService, TmdbService>();
-            services.AddSingleton<ITmdbClient, TmdbClient.TmdbClient>();
 
             services.AddDbContext<ImdbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
@@ -108,13 +108,13 @@ namespace MyIMDB
             services.AddMvc();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ITmdbService serv)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            serv.Seed().Wait();
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();

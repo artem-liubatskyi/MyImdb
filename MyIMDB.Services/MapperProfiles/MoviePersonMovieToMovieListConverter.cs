@@ -13,7 +13,7 @@ namespace MyIMDB.Services.MapperProfiles
                 Id = source.MovieId,
                 Title = source.Movie.Title,
                 Year = source.Movie.Year,
-                ImageUrl = source.Movie.ImageUrl,
+                ImageUrl = source.Movie.ImageUrl
             };
             return destination;
         }

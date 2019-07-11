@@ -190,7 +190,11 @@ namespace MyIMDB.Services
         }
         public async Task SetRefreshToken(User user, RefreshToken token)
         {
-            user.Token = token;
+            if (user.Token == null)
+                user.Token = await Uow.TokenRepository.Add(token);
+            else
+                user.Token = Uow.TokenRepository.Update(token);
+
             await Uow.SaveChangesAsync();
         }
     }

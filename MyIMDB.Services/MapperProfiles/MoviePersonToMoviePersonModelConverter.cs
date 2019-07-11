@@ -22,7 +22,7 @@ namespace MyIMDB.Services.MapperProfiles
             if (source.Gender != null)
                 destination.Gender = source.Gender.Title;
             if (source.DateOfBirth != null)
-                destination.DateOfBirth = source.DateOfBirth.ToLongDateString();
+                destination.DateOfBirth = source.DateOfBirth.ToString();
             return destination;
         }
     }

@@ -7,7 +7,6 @@ using MyIMDB.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using TmdbClient;
 using TmdbClient.ApiModels;
@@ -35,12 +34,15 @@ namespace MyIMDB.Services
                 var words = placeOfBirth.Split(' ');
                 countryName = $"{words[words.Count() - 2]} {words[words.Count() - 1]}";
             }
+            if (countryName == "Rico")
+                return "Puerto Rico";
 
             if (countryName == "United States of America" || countryName == "U.S.A." || countryName == "NY"
-                || countryName == "US" || countryName == "America" || countryName == "York")
+                || countryName == "US" || countryName == "U.S" || countryName == "America" || countryName == "York"
+                || countryName == "States" || countryName == "Illinois" || countryName == "Jersey")
                 return "USA";
 
-            if (countryName == "England" || countryName == "United Kingdom" || countryName == "U.K.")
+            if (countryName == "England" || countryName == "United Kingdom" || countryName == "U.K." || countryName == "U.K")
                 return "UK";
 
             if (countryName == "Kong")
@@ -125,21 +127,40 @@ namespace MyIMDB.Services
             }
             await context.SaveChangesAsync();
         }
-        private async Task AddReferencesWithPersons(long movieId, List<Person> persons, long referenceTypeId)
+        private async Task AddReferencesWithPersons(long movieId, List<Person> persons, long referenceTypeId, List<Cast> cast = null)
         {
             var names = persons.Select(x => x.Name).Distinct();
 
-            foreach (var name in names)
-            {
-                var person = await context.MoviePersons.FirstOrDefaultAsync(x => x.FullName == name);
-
-                await context.MoviePersonsMovies.AddAsync(new MoviePersonsMovies
+            if (cast != null)
+                foreach (var name in names)
                 {
-                    MovieId = movieId,
-                    MoviePersonId = person.Id,
-                    MoviePersonTypeId = referenceTypeId
-                });
-            }
+                    var person = await context.MoviePersons.FirstOrDefaultAsync(x => x.FullName == name);
+                    var character = cast.First(x => x.Name == name).Character;
+                    if (character == null)
+                        character = "Unknown";
+                    await context.MoviePersonsMovies.AddAsync(new MoviePersonsMovies
+                    {
+                        MovieId = movieId,
+                        MoviePersonId = person.Id,
+                        MoviePersonTypeId = referenceTypeId,
+                        Character = character
+
+                    });
+                }
+            else
+                foreach (var name in names)
+                {
+                    var person = await context.MoviePersons.FirstOrDefaultAsync(x => x.FullName == name);
+
+                    await context.MoviePersonsMovies.AddAsync(new MoviePersonsMovies
+                    {
+                        MovieId = movieId,
+                        MoviePersonId = person.Id,
+                        MoviePersonTypeId = referenceTypeId,
+                        Character = "Director Job"
+                    });
+                }
+
             await context.SaveChangesAsync();
         }
         private async Task AddReferencesWithCountries(long movieId, List<ProductionCountry> countries)
@@ -184,7 +205,7 @@ namespace MyIMDB.Services
                 return null;
 
             IDbContextTransaction transaction = null;
-            
+
             try
             {
                 context.Database.OpenConnection();
@@ -211,7 +232,7 @@ namespace MyIMDB.Services
                 var starType = await context.MoviePersonsType.FirstOrDefaultAsync(x => x.Type == Constants.StarType);
                 var directorType = await context.MoviePersonsType.FirstOrDefaultAsync(x => x.Type == Constants.DirectorType);
 
-                await AddReferencesWithPersons(movieEntity.Id, stars, starType.Id);
+                await AddReferencesWithPersons(movieEntity.Id, stars, starType.Id, credits.Cast);
                 await AddReferencesWithPersons(movieEntity.Id, directors, directorType.Id);
 
                 await AddReferencesWithCountries(movieEntity.Id, movie.Production_countries);
@@ -284,6 +305,28 @@ namespace MyIMDB.Services
                     directors.Add(person);
             }
             return directors;
+        }
+
+        public async Task Seed()
+        {
+            if (context.Movies.Any())
+                return;
+            try
+            {
+                await AddMovie("Avengers: Endgame");
+
+                //await AddMovie("Avengers: Infinity War");
+                //await AddMovie("Avengers: Age of Ultron");
+                //await AddMovie("The Avengers");
+
+                //await AddMovie("The Lord of the Rings: The Return of the King");
+                //await AddMovie("The Lord of the Rings");
+                //await AddMovie("The Lord of the Rings: The Two Towers");
+            }
+            catch (Exception ex)
+            {
+                var g = ex.Message;
+            }
         }
     }
 }

@@ -115,5 +115,11 @@ namespace MyIMDB.Services
 
             return true;
         }
+
+        public async Task AddReview(Review review)
+        {
+            await Uow.ReviewRepository.AddAsync(review);
+            await Uow.SaveChangesAsync();
+        }
     }
 }

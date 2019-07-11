@@ -87,6 +87,18 @@ namespace MyIMDB.Web.Controllers
             await service.RemoveFromWatchlist(movieId, userId);
             return Ok();
         }
+        [Authorize]
+        [HttpPost("add-review")]
+        public async Task<IActionResult> AddReview([FromBody]ReviewApiModel model)
+        {
+            long userId = Convert.ToInt64(User.FindFirst(ClaimTypes.Name).Value);
+
+            var review = mapper.Map<ReviewApiModel, Review>(model);
+            review.UserId = userId;
+
+            await service.AddReview(review);
+            return Ok();
+        }
         private long? GetUserId()
         {
             long? userId = null;

@@ -27,6 +27,8 @@ namespace MyIMDB.Data.Entities
         public virtual Country Country { get; set; }
 
         public virtual IEnumerable<UserMovie> Movies { get; set; }
+        public virtual IEnumerable<Review> Reviews { get; set; }
+        public virtual IEnumerable<Like> Likes { get; set; }
 
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }

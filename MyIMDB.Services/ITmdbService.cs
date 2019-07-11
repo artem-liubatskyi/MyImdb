@@ -13,5 +13,6 @@ namespace MyIMDB.Services
         Task<Credits> GetMovieCredits(long movieId);
         Task<Person> GetPersonAsync(long personId);
         Task<List<Person>> GetStars(Credits credits);
+        Task Seed();
     }
 }

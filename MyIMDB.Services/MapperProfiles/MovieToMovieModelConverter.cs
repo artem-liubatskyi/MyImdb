@@ -39,6 +39,8 @@ namespace MyIMDB.Services.MapperProfiles
                 Stars = context.Mapper.Map<IEnumerable<MoviePersonsMovies>, IEnumerable<MoviePersonListViewModel>>
                     (source.MoviePersonsMovies.Where(x => x.MoviePersonType.Type == Constants.StarType)),
 
+                Reviews = context.Mapper.Map<IEnumerable<Review>, IEnumerable<ReviewApiModel>>(source.Reviews),
+
                 AverageRate = source.RatesSum == 0 ? 0 : source.RatesSum / source.RatesCount,
 
                 Countries = source.MoviesCountries.Select(x => x.Country.Name),

@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyIMDB.Data.Entities;
 
@@ -11,7 +10,7 @@ namespace MyIMDB.Data.Configurations
         {
             builder.ToTable("MoviePersonMovie");
 
-            builder.HasKey(x => new { x.MovieId, x.MoviePersonId, x.MoviePersonTypeId });
+            builder.HasKey(x => new { x.MovieId, x.MoviePersonId ,x.MoviePersonTypeId, x.Character});
 
             builder.HasOne(x => x.Movie)
               .WithMany(x => x.MoviePersonsMovies)
